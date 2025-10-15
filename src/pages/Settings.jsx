@@ -6,28 +6,74 @@ import ActivityPreferencesSection from "../components/settings/ActivityPreferenc
 import VerificationSection from "../components/settings/VerificationSection";
 import SecuritySection from "../components/settings/SecuritySection";
 import ConnectedWalletsSection from "../components/settings/ConnectedWalletsSection";
+import LoginSignup from "../components/LoginSignup/LoginSignup";
 
 const Settings = () => {
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
 
   // User data state
-  const [userData, setUserData] = useState({
-    publicId: "ZZAVSJBCE0LC8VACZKBXSBFZARTN8Q5",
-    username: "Chris Farman",
-    email: "ritik@kadeventures.com",
-    memberSince: "Sep 18, 2025",
-    emailVerified: false,
-  });
+  const [userData, setUserData] = useState({});
 
   // Toggle states
   const [showBetsPublicly, setShowBetsPublicly] = useState(true);
   const [displayStats, setDisplayStats] = useState(true);
   const [receiveTipNotifications, setReceiveTipNotifications] = useState(true);
   const [enable2FA, setEnable2FA] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Copy to clipboard state
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+  const fetchProfile = async () => {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+
+    // If user not logged in, show Login modal
+    if (!userId || !token) {
+      setShowLoginModal(true);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:4000/api/auth/profile/${userId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user profile");
+      }
+
+      const data = await response.json();
+      console.log("user are:", data);
+
+      setUserData({
+        username: data.username || "",
+        email: data.email || "",
+        displayName: data.displayName || "",
+        memberSince: new Date(data.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
+        emailVerified: false, // Update when email verification available
+      });
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      setShowLoginModal(true);
+      setIsLoading(false);
+    }
+  };
+
+  fetchProfile();
+}, []);
 
   // Simulate loading data
   useEffect(() => {
@@ -91,6 +137,20 @@ const Settings = () => {
       </div>
     );
   }
+
+  if (showLoginModal) {
+  return (
+    <LoginSignup
+      isOpen={true}
+      onClose={() => setShowLoginModal(false)}
+      defaultTab="login"
+      onLoginSuccess={() => {
+        setShowLoginModal(false);
+        window.location.reload(); // refresh after successful login
+      }}
+    />
+  );
+}
 
   return (
     <div className="min-h-screen bg-[#0A0B0D] pt-20 md:pt-24 pb-8 px-4 lg:px-8">

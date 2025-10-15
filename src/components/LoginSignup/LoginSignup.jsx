@@ -93,15 +93,45 @@ const LoginSignup = ({
     setForgotPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLoginSubmit = () => {
-    console.log("Login:", loginData);
-    if (onLoginSuccess) onLoginSuccess(loginData);
-  };
+  const handleLoginSubmit = async () => {
+  try {
+    const res = await fetch("http://localhost:4000/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loginData),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      // ✅ Save token and user info
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-  const handleSignupSubmit = () => {
-    console.log("Signup:", signupData);
-    if (onSignupSuccess) onSignupSuccess(signupData);
-  };
+      if (onLoginSuccess) onLoginSuccess(data);
+    } else {
+      alert(data.message || "Login failed");
+    }
+  } catch (err) {
+    alert("Network error", err);
+  }
+};
+
+  const handleSignupSubmit = async () => {
+  try {
+    const res = await fetch("http://localhost:4000/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(signupData),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if (onSignupSuccess) onSignupSuccess(data);
+    } else {
+      alert(data.message || "Signup failed");
+    }
+  } catch (err) {
+    alert("Network error", err);
+  }
+};
 
   const handleForgotPasswordSubmit = () => {
     console.log("Forgot Password:", forgotPasswordData);

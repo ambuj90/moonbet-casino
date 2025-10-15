@@ -13,8 +13,80 @@ const WalletModal = ({ isOpen, onClose }) => {
   const [selectedFiatCurrency, setSelectedFiatCurrency] = useState("USD");
   const [buyAmount, setBuyAmount] = useState("");
   const [copied, setCopied] = useState(false);
+  const [coinList, setCoinList] = useState([]);
+  const [walletBalance, setWalletBalance] = useState(null);
+const [selectedCoin, setSelectedCoin] = useState(null);
+const [showCoinDropdown, setShowCoinDropdown] = useState(false);
+const [depositCoinList, setDepositCoinList] = useState([]);
+const [selectedDepositCoin, setSelectedDepositCoin] = useState(null);
+const [depositAddress, setDepositAddress] = useState("");
+const [showDepositDropdown, setShowDepositDropdown] = useState(false);
+
 
   const walletAddress = "Ar64QrBWTHWncHKXv2ojJ2np1zAGTEhZUA8wfdhTg7n";
+
+  useEffect(() => {
+  if (isOpen) {
+    fetch("http://localhost:4001/api/wallet/68eb94c22a7983ea19b0bd6a/balance")
+      .then((res) => res.json())
+      .then((data) => {
+        setWalletBalance(data);
+      })
+      .catch((err) => console.error("Error fetching wallet balance:", err));
+  }
+}, [isOpen]);
+
+  useEffect(() => {
+  if (isOpen) {
+    fetch("http://localhost:4001/api/wallet/coins")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCoinList(data);
+          setSelectedCoin(data[0]); // default to first coin
+        }
+      })
+      .catch((err) => console.error("Error fetching coins:", err));
+  }
+}, [isOpen]);
+
+useEffect(() => {
+  if (showDepositModal) {
+    fetch("http://localhost:4001/api/wallet/coins")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setDepositCoinList(data);
+          setSelectedDepositCoin(data[0]);
+        }
+      })
+      .catch((err) => console.error("Error fetching deposit coins:", err));
+  }
+}, [showDepositModal]);
+
+
+useEffect(() => {
+  const userId = "68eb94c22a7983ea19b0bd6a"; // replace with dynamic if needed
+  if (selectedDepositCoin?.symbol) {
+    const currency = selectedDepositCoin.symbol.toUpperCase();
+    fetch(`http://localhost:4001/api/wallet/${userId}/deposit-address?currency=${currency}`)
+      .then((res) => res.json())
+      .then(async (data) => {
+        setDepositAddress(data.payAddress || "");
+        // Generate QR code
+        if (data.payAddress) {
+          const qr = await QRCode.toDataURL(data.payAddress, {
+            width: 256,
+            margin: 2,
+            color: { dark: "#000000", light: "#FFFFFF" },
+          });
+          setQrCodeData(qr);
+        }
+      })
+      .catch((err) => console.error("Error fetching deposit address:", err));
+  }
+}, [selectedDepositCoin]);
+
 
   useEffect(() => {
     if (walletAddress) {
@@ -101,10 +173,12 @@ const WalletModal = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(walletAddress);
+  if (depositAddress) {
+    navigator.clipboard.writeText(depositAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
+  }
+};
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -213,35 +287,71 @@ const WalletModal = ({ isOpen, onClose }) => {
 
               {/* Content */}
               <div className="px-6 pb-6">
-                <div className="mb-4">
-                  <label className="text-gray-400 text-sm mb-2 block">
-                    Currency
-                  </label>
-                  <div className="bg-[#0F1116] rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all border border-white/10">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold">
-                        ◎
-                      </div>
-                      <div>
-                        <div className="text-white font-bold">SOL</div>
-                        <div className="text-gray-400 text-sm">Solana</div>
-                      </div>
-                    </div>
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </div>
+                <div className="mb-4 relative">
+  <label className="text-gray-400 text-sm mb-2 block">Currency</label>
+
+  {/* Selected Coin Display */}
+  <div
+    onClick={() => setShowDepositDropdown(!showDepositDropdown)}
+    className="bg-[#0F1116] rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all border border-white/10"
+  >
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 bg-gradient-to-br from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold">
+        {selectedDepositCoin?.symbol?.charAt(0) || "◎"}
+      </div>
+      <div>
+        <div className="text-white font-bold">{selectedDepositCoin?.symbol || "SOL"}</div>
+        <div className="text-gray-400 text-sm">{selectedDepositCoin?.name || "Solana"}</div>
+      </div>
+    </div>
+    <svg
+      className={`w-5 h-5 text-gray-400 transition-transform ${
+        showDepositDropdown ? "rotate-180" : ""
+      }`}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+
+  {/* Dropdown */}
+  <AnimatePresence>
+    {showDepositDropdown && (
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.2 }}
+        className="absolute left-0 right-0 mt-2 bg-[#0F1116] border border-white/10 rounded-lg shadow-lg z-[999] max-h-60 overflow-y-auto"
+      >
+        {depositCoinList.map((coin) => (
+          <div
+            key={coin.symbol}
+            onClick={() => {
+              setSelectedDepositCoin(coin);
+              setShowDepositDropdown(false);
+            }}
+            className="flex items-center justify-between px-4 py-3 hover:bg-white/5 cursor-pointer transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold">
+                {coin.symbol.charAt(0)}
+              </div>
+              <div>
+                <div className="text-white font-bold">{coin.symbol}</div>
+                <div className="text-gray-400 text-xs">{coin.name}</div>
+              </div>
+            </div>
+            <span className="text-gray-400 text-sm">{coin.network}</span>
+          </div>
+        ))}
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
+
 
                 <div className="mb-6">
                   <label className="text-gray-400 text-sm mb-2 block">
@@ -249,7 +359,7 @@ const WalletModal = ({ isOpen, onClose }) => {
                   </label>
                   <div className="bg-[#0F1116] rounded-lg p-4 flex items-center gap-3 border border-white/10">
                     <span className="text-white text-sm font-mono flex-1 truncate">
-                      {walletAddress}
+                      {depositAddress || "Fetching address..."}
                     </span>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
@@ -432,7 +542,7 @@ const WalletModal = ({ isOpen, onClose }) => {
                       <h3 className="text-gray-400 text-sm mb-2">Balance</h3>
                       <div className="flex items-center gap-3">
                         <span className="text-4xl font-bold text-white">
-                          $19.58
+                          ${walletBalance?.totalUsd?.toFixed(2) || "0.00"}
                         </span>
                         <div className="w-8 h-8 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold text-sm">
                           $
@@ -445,38 +555,40 @@ const WalletModal = ({ isOpen, onClose }) => {
                         <span>Currency</span>
                         <span>Value</span>
                       </div>
+                      {walletBalance?.balances && walletBalance.balances.length > 0 ? (
+  walletBalance.balances.map((coin, index) => (
+    <motion.div
+      key={coin.currency}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="flex items-center justify-between py-4 border-b border-white/5 hover:bg-white/5 transition-all px-2 rounded-lg"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold">
+          {coin.currency.charAt(0)}
+        </div>
+        <div>
+          <div className="text-white font-bold">{coin.currency}</div>
+          <div className="text-gray-400 text-sm">Crypto Asset</div>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="text-white font-bold">
+          {coin.amount.toFixed(8)}
+        </div>
+        <div className="text-gray-400 text-sm">
+          ${coin.usdValue.toFixed(2)} USD
+        </div>
+      </div>
+    </motion.div>
+  ))
+) : (
+  <div className="text-gray-400 text-center py-6">
+    No balances found.
+  </div>
+)}
 
-                      {cryptoCurrencies.map((crypto, index) => (
-                        <motion.div
-                          key={crypto.symbol}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="flex items-center justify-between py-4 border-b border-white/5 hover:bg-white/5 transition-all px-2 rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold">
-                              {crypto.icon}
-                            </div>
-                            <div>
-                              <div className="text-white font-bold">
-                                {crypto.symbol}
-                              </div>
-                              <div className="text-gray-400 text-sm">
-                                {crypto.name}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-white font-bold">
-                              {crypto.balance}
-                            </div>
-                            <div className="text-gray-400 text-sm">
-                              {crypto.value} USD
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-6">
@@ -510,95 +622,132 @@ const WalletModal = ({ isOpen, onClose }) => {
                 )}
 
                 {/* Buy Crypto Tab */}
-                {activeTab === "buycrypto" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-6"
-                  >
-                    <div className="mb-4">
-                      <label className="text-gray-400 text-sm mb-2 block">
-                        Buy
-                      </label>
-                      <div className="bg-[#0F1116] rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all border border-white/10">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold">
-                            ◎
-                          </div>
-                          <div>
-                            <div className="text-white font-bold">SOL</div>
-                            <div className="text-gray-400 text-sm">Solana</div>
-                          </div>
-                        </div>
-                        <svg
-                          className="w-5 h-5 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </div>
-                    </div>
+                {/* Buy Crypto Tab */}
+{activeTab === "buycrypto" && (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="p-6"
+  >
+    {/* ==== FETCH COINS API ==== */}
+    {/* Put this near top of component, outside return */}
+    {/* useState & useEffect logic are shown below */}
 
-                    <div className="mb-6">
-                      <label className="text-gray-400 text-sm mb-2 block">
-                        Amount *
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="number"
-                          value={buyAmount}
-                          onChange={(e) => setBuyAmount(e.target.value)}
-                          placeholder="0"
-                          className="flex-1 bg-[#0F1116] text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F07730] border border-white/10"
-                        />
-                        <div className="bg-[#0F1116] rounded-lg px-4 py-3 flex items-center gap-2 min-w-[120px] border border-white/10">
-                          <div className="w-6 h-6 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black text-xs font-bold">
-                            ₹
-                          </div>
-                          <span className="text-white font-medium">INR</span>
-                          <svg
-                            className="w-4 h-4 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 9l-7 7-7-7"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
+    {/* Buy Crypto Selection */}
+    <div className="mb-4 relative">
+      <label className="text-gray-400 text-sm mb-2 block">Buy</label>
 
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-[#F07730] to-[#EFD28E] hover:from-[#F07730]/90 hover:to-[#EFD28E]/90 text-black py-4 px-6 rounded-lg font-bold transition-all"
-                    >
-                      Buy
-                    </motion.button>
+      {/* Selected Coin Display */}
+      <div
+        onClick={() => setShowCoinDropdown(!showCoinDropdown)}
+        className="bg-[#0F1116] rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all border border-white/10"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold">
+            {selectedCoin?.symbol?.charAt(0) || "◎"}
+          </div>
+          <div>
+            <div className="text-white font-bold">{selectedCoin?.symbol || "SOL"}</div>
+            <div className="text-gray-400 text-sm">{selectedCoin?.name || "Solana"}</div>
+          </div>
+        </div>
+        <svg
+          className={`w-5 h-5 text-gray-400 transition-transform ${
+            showCoinDropdown ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
 
-                    <div className="mt-6 bg-gradient-to-r from-[#F07730]/10 to-[#EFD28E]/10 border border-[#F07730]/30 rounded-lg p-4">
-                      <p className="text-gray-300 mb-4">
-                        Improve your account security with Two-Factor
-                        Authentication
-                      </p>
-                      <button className="w-full bg-gradient-to-r from-[#F07730] to-[#EFD28E] hover:from-[#F07730]/90 hover:to-[#EFD28E]/90 text-black py-3 px-4 rounded-lg font-medium transition-all">
-                        Enable 2FA
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
+      {/* ==== Dropdown Menu ==== */}
+      <AnimatePresence>
+        {showCoinDropdown && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute left-0 right-0 mt-2 bg-[#0F1116] border border-white/10 rounded-lg shadow-lg z-[999] max-h-60 overflow-y-auto"
+          >
+            {coinList.map((coin) => (
+              <div
+                key={coin.symbol}
+                onClick={() => {
+                  setSelectedCoin(coin);
+                  setShowCoinDropdown(false);
+                }}
+                className="flex items-center justify-between px-4 py-3 hover:bg-white/5 cursor-pointer transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black font-bold">
+                    {coin.symbol.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="text-white font-bold">{coin.symbol}</div>
+                    <div className="text-gray-400 text-xs">{coin.name}</div>
+                  </div>
+                </div>
+                <span className="text-gray-400 text-sm">{coin.network}</span>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+
+    {/* ==== Amount Input ==== */}
+    <div className="mb-6">
+      <label className="text-gray-400 text-sm mb-2 block">Amount *</label>
+      <div className="flex gap-2">
+        <input
+          type="number"
+          value={buyAmount}
+          onChange={(e) => setBuyAmount(e.target.value)}
+          placeholder="0"
+          className="flex-1 bg-[#0F1116] text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F07730] border border-white/10"
+        />
+        <div className="bg-[#0F1116] rounded-lg px-4 py-3 flex items-center gap-2 min-w-[120px] border border-white/10">
+          <div className="w-6 h-6 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full flex items-center justify-center text-black text-xs font-bold">
+            ₹
+          </div>
+          <span className="text-white font-medium">INR</span>
+          <svg
+            className="w-4 h-4 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    {/* ==== Buy Button ==== */}
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className="w-full bg-gradient-to-r from-[#F07730] to-[#EFD28E] hover:from-[#F07730]/90 hover:to-[#EFD28E]/90 text-black py-4 px-6 rounded-lg font-bold transition-all"
+    >
+      Buy {selectedCoin?.symbol || "SOL"}
+    </motion.button>
+  </motion.div>
+)}
+
 
                 {/* Settings Tab */}
                 {activeTab === "settings" && (

@@ -8,6 +8,7 @@ const AccountSection = ({ userData, onUpdate }) => {
     username: userData?.username || "",
     email: userData?.email || "",
   });
+  // console.log("user are:",userData);
 
   const handleEdit = () => {
     setIsEditing(!isEditing);

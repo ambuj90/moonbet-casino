@@ -12,8 +12,6 @@ import Settings from "./pages/Settings";
 import Transactions from "./pages/Transactions";
 import Bets from "./pages/Bets";
 import LoginSignup from "./components/LoginSignup/LoginSignup";
-import GamePage from "./pages/GamePage";
-import Footer from "./components/layouts/Footer";
 
 // Placeholder pages
 const HoneypotPage = () => (
@@ -51,40 +49,53 @@ const AuthModalHandler = ({ children }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [defaultTab, setDefaultTab] = useState("login");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check URL parameters on mount and when they change
+    // ✅ Check if logged in
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  useEffect(() => {
     const modalParam = searchParams.get("modal");
     const tabParam = searchParams.get("tab");
 
-    if (modalParam === "auth") {
+    if (modalParam === "auth" && !isLoggedIn) {
       setIsAuthModalOpen(true);
-      // Set tab to 'login' or 'register', default to 'login'
       setDefaultTab(tabParam === "register" ? "register" : "login");
     } else {
       setIsAuthModalOpen(false);
     }
-  }, [searchParams]);
+  }, [searchParams, isLoggedIn]);
 
   const handleCloseAuthModal = () => {
     setIsAuthModalOpen(false);
-    // Remove modal and tab parameters from URL
     searchParams.delete("modal");
     searchParams.delete("tab");
     setSearchParams(searchParams);
   };
 
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    handleCloseAuthModal();
+  };
+
   return (
     <>
       {children}
-      <LoginSignup
-        isOpen={isAuthModalOpen}
-        onClose={handleCloseAuthModal}
-        defaultTab={defaultTab}
-      />
+      {!isLoggedIn && (
+        <LoginSignup
+          isOpen={isAuthModalOpen}
+          onClose={handleCloseAuthModal}
+          defaultTab={defaultTab}
+          onLoginSuccess={handleLoginSuccess}
+        />
+      )}
     </>
   );
 };
+
 
 function App() {
   return (
@@ -102,7 +113,6 @@ function App() {
             <Route path="transactions" element={<Transactions />} />
             <Route path="bets" element={<Bets />} />
             <Route path="bet-history" element={<Bets />} />
-            <Route path="game/:gameId" element={<GamePage />} />
           </Route>
         </Routes>
       </AuthModalHandler>
