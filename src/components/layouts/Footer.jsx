@@ -124,11 +124,11 @@ const Footer = () => {
               className="flex flex-col lg:pr-10 text-center lg:text-left items-center lg:items-start"
               variants={itemVariants}
             >
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-5">
                 <img
-                  src="/moonbet-logo.png"
-                  alt="MoonBet"
-                  className="h-[60px] w-auto"
+                  src="/icons/logo.svg"
+                  alt="Wallet Icon"
+                  className="w-60  object-contain"
                 />
               </div>
 
@@ -244,7 +244,7 @@ const Footer = () => {
 
           {/* Bottom Section with Glassmorphism */}
           <motion.div
-            className="flex flex-col sm:flex-row justify-between items-center py-8 gap-4 backdrop-blur-md bg-white/5 rounded-2xl px-6 border border-white/10 mb-20 lg:mb-0"
+            className="flex flex-col sm:flex-row justify-between items-center py-8 gap-4  mb-20 lg:mb-0"
             variants={itemVariants}
           >
             <div className="flex items-center gap-4">

@@ -190,7 +190,7 @@ export const WalletDropdownIcon = (
 
 export const ContactIcon = (
   <img
-    src="/icons/contact-icon-1.png"
+    src="/icons/contact-icon-1.svg"
     height={24}
     width={24}
     alt="Contact Us"
@@ -200,7 +200,7 @@ export const ContactIcon = (
 
 export const BegambleawareIcon = (
   <img
-    src="/icons/gameble-icon-1.png"
+    src="/icons/gameble-icon-1.svg"
     height={32}
     width={32}
     alt="BeGambleAware"
