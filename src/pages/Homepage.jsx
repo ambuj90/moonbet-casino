@@ -17,7 +17,7 @@ const Homepage = () => {
       <CasinoWheel />
       <HomeRewardsSection />
       <HomeGamesSection />
-      <CasinoWheel2 />
+      {/* <CasinoWheel2 /> */}
       <SlotsSection />
       <GameBetsSection userId="user123" />
       <HomeFAQSection />

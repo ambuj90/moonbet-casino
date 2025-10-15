@@ -663,3 +663,16 @@
 }
 
 /* Optional: Hover glow */
+.wallet-btn2::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px; /* border thickness */
+  border-radius: 8px;
+  background: linear-gradient(39deg, #f07730 0%, #f474fb00 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
