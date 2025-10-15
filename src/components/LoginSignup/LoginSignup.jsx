@@ -1,4 +1,4 @@
-// src/components/LoginSignup/LoginSignup.jsx - Perfect Casino Login Modal
+// src/components/LoginSignup/LoginSignup.jsx - Updated with Forgot Password
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,9 +39,11 @@ const LoginSignup = ({
   defaultTab = "login",
   onLoginSuccess,
   onSignupSuccess,
+  onForgotPasswordSuccess,
 }) => {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [showReferralCode, setShowReferralCode] = useState(false);
+  const [recoverySent, setRecoverySent] = useState(false);
 
   // Form state
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -53,6 +55,9 @@ const LoginSignup = ({
     referralCode: "",
     agreeTerms: false,
     agreeMarketing: false,
+  });
+  const [forgotPasswordData, setForgotPasswordData] = useState({
+    email: "",
   });
 
   useEffect(() => {
@@ -83,6 +88,11 @@ const LoginSignup = ({
     }));
   };
 
+  const handleForgotPasswordChange = (e) => {
+    const { name, value } = e.target;
+    setForgotPasswordData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleLoginSubmit = () => {
     console.log("Login:", loginData);
     if (onLoginSuccess) onLoginSuccess(loginData);
@@ -91,6 +101,18 @@ const LoginSignup = ({
   const handleSignupSubmit = () => {
     console.log("Signup:", signupData);
     if (onSignupSuccess) onSignupSuccess(signupData);
+  };
+
+  const handleForgotPasswordSubmit = () => {
+    console.log("Forgot Password:", forgotPasswordData);
+    setRecoverySent(true);
+    if (onForgotPasswordSuccess) onForgotPasswordSuccess(forgotPasswordData);
+  };
+
+  const handleBackToLogin = () => {
+    setActiveTab("login");
+    setRecoverySent(false);
+    setForgotPasswordData({ email: "" });
   };
 
   if (!isOpen) return null;
@@ -157,11 +179,11 @@ const LoginSignup = ({
               <div className="relative z-10 flex flex-col justify-between h-full">
                 <div>
                   <div className="mb-6">
-                    <img
-                      src="/icons/logo.svg"
-                      alt="MoonBet"
-                      className="h-10 w-auto brightness-0 invert"
-                    />
+                    <div className="h-10 flex items-center">
+                      <span className="text-3xl font-bold text-white">
+                        MOONBET
+                      </span>
+                    </div>
                   </div>
                   <h2 className="text-3xl font-bold text-white mb-3">
                     Welcome to MoonBet
@@ -238,29 +260,31 @@ const LoginSignup = ({
 
             {/* Right Side - Form */}
             <div className="w-full lg:w-[60%] p-6 sm:p-8 lg:p-10 max-h-[85vh] overflow-y-auto">
-              {/* Tabs */}
-              <div className="flex gap-2 mb-6 p-1 bg-white/5 rounded-xl">
-                <button
-                  onClick={() => setActiveTab("login")}
-                  className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 ${
-                    activeTab === "login"
-                      ? "bg-gradient-to-r from-[#F07730] to-[#EFD28E] text-white shadow-lg"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => setActiveTab("register")}
-                  className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 ${
-                    activeTab === "register"
-                      ? "bg-gradient-to-r from-[#F07730] to-[#EFD28E] text-white shadow-lg"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  Register
-                </button>
-              </div>
+              {/* Tabs - Hide when on forgot password */}
+              {activeTab !== "forgot" && (
+                <div className="flex gap-2 mb-6 p-1 bg-white/5 rounded-xl">
+                  <button
+                    onClick={() => setActiveTab("login")}
+                    className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                      activeTab === "login"
+                        ? "bg-gradient-to-r from-[#F07730] to-[#EFD28E] text-white shadow-lg"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("register")}
+                    className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                      activeTab === "register"
+                        ? "bg-gradient-to-r from-[#F07730] to-[#EFD28E] text-white shadow-lg"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    Register
+                  </button>
+                </div>
+              )}
 
               {/* Content */}
               <AnimatePresence mode="wait">
@@ -332,12 +356,12 @@ const LoginSignup = ({
                       </div>
 
                       <div className="flex justify-end">
-                        <a
-                          href="#"
+                        <button
+                          onClick={() => setActiveTab("forgot")}
                           className="text-sm text-[#F07730] hover:text-[#EFD28E] transition-colors"
                         >
                           Forgot password?
-                        </a>
+                        </button>
                       </div>
 
                       <button
@@ -360,7 +384,7 @@ const LoginSignup = ({
                       </button>
                     </div>
                   </motion.div>
-                ) : (
+                ) : activeTab === "register" ? (
                   <motion.div
                     key="register"
                     initial={{ opacity: 0, x: 10 }}
@@ -529,6 +553,106 @@ const LoginSignup = ({
                         Sign in
                       </button>
                     </div>
+                  </motion.div>
+                ) : (
+                  // Forgot Password Form
+                  <motion.div
+                    key="forgot"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <div className="mb-6">
+                      <h3 className="text-2xl font-bold text-white mb-1">
+                        Recover Account
+                      </h3>
+                      <p className="text-gray-400 text-sm">
+                        {recoverySent
+                          ? "Check your email for recovery instructions"
+                          : "Enter your email to reset your password"}
+                      </p>
+                    </div>
+
+                    {!recoverySent ? (
+                      <>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm text-gray-400 mb-2">
+                              Username or Email
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              placeholder="Enter your email address"
+                              value={forgotPasswordData.email}
+                              onChange={handleForgotPasswordChange}
+                              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#F07730] focus:ring-1 focus:ring-[#F07730] transition-all"
+                            />
+                          </div>
+
+                          <button
+                            onClick={handleForgotPasswordSubmit}
+                            className="w-full py-3 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-lg text-white font-bold hover:shadow-lg hover:shadow-[#F07730]/30 transition-all"
+                          >
+                            Recover Account
+                          </button>
+                        </div>
+
+                        <div className="mt-6 text-center">
+                          <button
+                            onClick={handleBackToLogin}
+                            className="text-sm text-[#F07730] hover:text-[#EFD28E] transition-colors"
+                          >
+                            Return to Login
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Success State */}
+                        <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                              <svg
+                                className="w-6 h-6 text-green-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                strokeWidth="2"
+                              >
+                                <path
+                                  d="M5 13l4 4L19 7"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="text-green-400 font-semibold mb-1">
+                                Success!
+                              </div>
+                              <div className="text-sm text-gray-300">
+                                Password recovery email has been sent to{" "}
+                                {forgotPasswordData.email}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 text-sm text-gray-400">
+                          <p>Please check your email inbox and spam folder.</p>
+                          <p>The recovery link will expire in 24 hours.</p>
+                        </div>
+
+                        <button
+                          onClick={handleBackToLogin}
+                          className="w-full py-3 mt-6 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-lg text-white font-bold hover:shadow-lg hover:shadow-[#F07730]/30 transition-all"
+                        >
+                          Return to Login
+                        </button>
+                      </>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
