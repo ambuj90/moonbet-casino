@@ -100,7 +100,7 @@ const Footer = () => {
       {/* Background Image Container */}
       <div className="absolute inset-0 w-full h-full z-0">
         <img
-          src="home-assets/footer-bg-2.png"
+          src="/home-assets/footer-bg-2.png"
           alt=""
           className="w-full h-full object-cover object-center opacity-100"
         />

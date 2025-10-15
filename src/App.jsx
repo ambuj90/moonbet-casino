@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import Transactions from "./pages/Transactions";
 import Bets from "./pages/Bets";
 import LoginSignup from "./components/LoginSignup/LoginSignup";
+import GamePage from "./pages/GamePage";
+import Footer from "./components/layouts/Footer";
 
 // Placeholder pages
 const HoneypotPage = () => (
@@ -100,6 +102,7 @@ function App() {
             <Route path="transactions" element={<Transactions />} />
             <Route path="bets" element={<Bets />} />
             <Route path="bet-history" element={<Bets />} />
+            <Route path="game/:gameId" element={<GamePage />} />
           </Route>
         </Routes>
       </AuthModalHandler>
