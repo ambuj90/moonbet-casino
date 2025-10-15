@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import WalletSettingsModal from "../WalletSettingsModal";
 import WalletModal from "../WalletModal";
+import LoginTrigger from "../LoginSignup/LoginTrigger";
 
 const Header = ({
   onMobileSidebarToggle,
@@ -377,7 +378,7 @@ const Header = ({
               {/* Wallet Dropdown */}
               {walletDropdownOpen && (
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 w-[90vw] sm:w-80 bg-[#1A1D24]/95 
+                  className="absolute left-1/2 -translate-x-1/2 mt-10 w-[90vw] sm:w-80 bg-[#1A1D24]/95 
                  border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
                   style={{
                     backdropFilter: "blur(20px)",
@@ -543,23 +544,27 @@ const Header = ({
             </button>
 
             {/* Profile Avatar */}
-            <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-            </button>
+            {/* Trigger Button */}
+            <LoginTrigger
+              buttonText={
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+              }
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            />
           </div>
         </div>
       </header>
