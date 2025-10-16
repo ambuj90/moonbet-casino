@@ -121,12 +121,12 @@ const GamePage = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#000] overflow-hidden">
+    <div className="h-auto md:h-screen flex flex-col bg-[#000] overflow-hidden">
       {/* Game Container */}
       <div className="flex-1 flex flex-col">
         {/* Game Iframe Container */}
         <div className="relative bg-black flex-1 sm:h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[80vh] 2xl:h-[85vh]">
-          <div className="w-full h-full flex items-center justify-center px-8 py-4">
+          <div className="h-[80vh] md:h-full flex items-center justify-center px-8 py-4">
             <div className="w-[90%] h-[90%] mt-[4rem] bg-black rounded-lg overflow-hidden shadow-2xl border border-white/10">
               <iframe
                 ref={iframeRef}
