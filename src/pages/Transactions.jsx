@@ -5,174 +5,233 @@ import { motion, AnimatePresence } from "framer-motion";
 const Transactions = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
-  const [filterType, setFilterType] = useState("all"); // all, deposit, withdrawal, reward
+  const [filterType, setFilterType] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
-  // Sample transaction data
-  const sampleTransactions = [
-    {
-      id: "a4aa8c4d26a2e8",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 15, 4:47 AM",
-      amount: "$0.09",
-    },
-    {
-      id: "c88fegae54f7990",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 15, 4:09 AM",
-      amount: "$0.09",
-    },
-    {
-      id: "0od3u5xjd7JzXe",
-      type: "Rakeback",
-      status: "Complete",
-      date: "Oct 15, 3:09 PM",
-      amount: "$0.01",
-    },
-    {
-      id: "Ks7Okaaeu5XAFh",
-      type: "Rakeback",
-      status: "Complete",
-      date: "Oct 15, 8:20 PM",
-      amount: "$0.01",
-    },
-    {
-      id: "cm3zXuw15ZfWmQ",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 15, 5:04 PM",
-      amount: "$0.02",
-    },
-    {
-      id: "1mvuRhr7GjmeltBv",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 15, 11:18 AM",
-      amount: "$0.08",
-    },
-    {
-      id: "fvhR89YS5ZbLrE",
-      type: "Daily Reward",
-      status: "Complete",
-      date: "Oct 15, 11:08 AM",
-      amount: "$0.09",
-    },
-    {
-      id: "AzqJvpwuW72XbT",
-      type: "Rakeback",
-      status: "Complete",
-      date: "Oct 14, 11:09 AM",
-      amount: "$0.05",
-    },
-    {
-      id: "l1vxk6uXj0CqNp",
-      type: "Weekly Reward",
-      status: "Complete",
-      date: "Oct 15, 5:30 AM",
-      amount: "$0.26",
-    },
-    {
-      id: "3yKE31JRvXRmjK",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 15, 5:40 AM",
-      amount: "$0.13",
-    },
-    {
-      id: "JLr7ncPktews3Gj",
-      type: "Daily Reward",
-      status: "Complete",
-      date: "Oct 10, 7:31 AM",
-      amount: "$0.01",
-    },
-    {
-      id: "u2bzLhnAtnS4p4a",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 10, 11:44 AM",
-      amount: "$0.09",
-    },
-    {
-      id: "iUABh58r8ucmvhg",
-      type: "Daily Reward",
-      status: "Complete",
-      date: "Oct 9, 10:47 AM",
-      amount: "$0.36",
-    },
-    {
-      id: "AvjAvxI4qtFGpxrwlJ",
-      type: "Rakeback",
-      status: "Complete",
-      date: "Oct 8, 4:30 AM",
-      amount: "$1.18",
-    },
-    {
-      id: "xivecQ3zibLh0vhilmg",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 8, 6:45 AM",
-      amount: "$10.18",
-    },
-    {
-      id: "Ty7vKcluzeH7ml7",
-      type: "Weekly Reward",
-      status: "Complete",
-      date: "Oct 8, 10:29 AM",
-      amount: "$0.19",
-    },
-    {
-      id: "FRz8oOp0pzGr",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 7, 6:45 AM",
-      amount: "$0.11",
-    },
-    {
-      id: "b2woCpbazeruBl",
-      type: "Rakeback",
-      status: "Complete",
-      date: "Oct 4, 9:25 AM",
-      amount: "$0.01",
-    },
-    {
-      id: "3YszIb5ctc88bn",
-      type: "Calendar Reward",
-      status: "Complete",
-      date: "Oct 4, 6:45 AM",
-      amount: "$0.11",
-    },
-    {
-      id: "xvnoQ3atcXXAYE9",
-      type: "Rakeback",
-      status: "Complete",
-      date: "Oct 3, 10:01 AM",
-      amount: "$1.04",
-    },
-  ];
-
   useEffect(() => {
-    // Simulate loading data
-    const loadTransactions = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setTransactions(sampleTransactions);
-      setIsLoading(false);
+    const fetchTransactions = async () => {
+      try {
+        const userId = localStorage.getItem("userid");
+        if (!userId) {
+          console.warn("No userId found in localStorage.");
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          `http://localhost:4001/api/wallet/${userId}/transactions`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch transactions");
+        }
+
+        const data = await response.json();
+        if (Array.isArray(data.transactions)) {
+          // ✅ Transform to match frontend display structure
+          const formatted = data.transactions.map((tx) => ({
+            id: tx._id,
+            type:
+              tx.type === "deposit"
+                ? "Deposit"
+                : tx.type === "withdraw"
+                ? "Withdrawal"
+                : tx.type,
+            status:
+              tx.status === "finished" || tx.status === "confirmed"
+                ? "Complete"
+                : tx.status.charAt(0).toUpperCase() + tx.status.slice(1),
+            date: new Date(tx.createdAt).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            amount: `${tx.amount} ${tx.currency.toUpperCase()}`,
+          }));
+
+          setTransactions(formatted);
+        } else {
+          setTransactions([]);
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        setIsLoading(false);
+      }
     };
-    loadTransactions();
+
+    fetchTransactions();
   }, []);
+
+  // Sample transaction data
+  // const sampleTransactions = [
+  //   {
+  //     id: "a4aa8c4d26a2e8",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 15, 4:47 AM",
+  //     amount: "$0.09",
+  //   },
+  //   {
+  //     id: "c88fegae54f7990",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 15, 4:09 AM",
+  //     amount: "$0.09",
+  //   },
+  //   {
+  //     id: "0od3u5xjd7JzXe",
+  //     type: "Rakeback",
+  //     status: "Complete",
+  //     date: "Oct 15, 3:09 PM",
+  //     amount: "$0.01",
+  //   },
+  //   {
+  //     id: "Ks7Okaaeu5XAFh",
+  //     type: "Rakeback",
+  //     status: "Complete",
+  //     date: "Oct 15, 8:20 PM",
+  //     amount: "$0.01",
+  //   },
+  //   {
+  //     id: "cm3zXuw15ZfWmQ",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 15, 5:04 PM",
+  //     amount: "$0.02",
+  //   },
+  //   {
+  //     id: "1mvuRhr7GjmeltBv",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 15, 11:18 AM",
+  //     amount: "$0.08",
+  //   },
+  //   {
+  //     id: "fvhR89YS5ZbLrE",
+  //     type: "Daily Reward",
+  //     status: "Complete",
+  //     date: "Oct 15, 11:08 AM",
+  //     amount: "$0.09",
+  //   },
+  //   {
+  //     id: "AzqJvpwuW72XbT",
+  //     type: "Rakeback",
+  //     status: "Complete",
+  //     date: "Oct 14, 11:09 AM",
+  //     amount: "$0.05",
+  //   },
+  //   {
+  //     id: "l1vxk6uXj0CqNp",
+  //     type: "Weekly Reward",
+  //     status: "Complete",
+  //     date: "Oct 15, 5:30 AM",
+  //     amount: "$0.26",
+  //   },
+  //   {
+  //     id: "3yKE31JRvXRmjK",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 15, 5:40 AM",
+  //     amount: "$0.13",
+  //   },
+  //   {
+  //     id: "JLr7ncPktews3Gj",
+  //     type: "Daily Reward",
+  //     status: "Complete",
+  //     date: "Oct 10, 7:31 AM",
+  //     amount: "$0.01",
+  //   },
+  //   {
+  //     id: "u2bzLhnAtnS4p4a",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 10, 11:44 AM",
+  //     amount: "$0.09",
+  //   },
+  //   {
+  //     id: "iUABh58r8ucmvhg",
+  //     type: "Daily Reward",
+  //     status: "Complete",
+  //     date: "Oct 9, 10:47 AM",
+  //     amount: "$0.36",
+  //   },
+  //   {
+  //     id: "AvjAvxI4qtFGpxrwlJ",
+  //     type: "Rakeback",
+  //     status: "Complete",
+  //     date: "Oct 8, 4:30 AM",
+  //     amount: "$1.18",
+  //   },
+  //   {
+  //     id: "xivecQ3zibLh0vhilmg",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 8, 6:45 AM",
+  //     amount: "$10.18",
+  //   },
+  //   {
+  //     id: "Ty7vKcluzeH7ml7",
+  //     type: "Weekly Reward",
+  //     status: "Complete",
+  //     date: "Oct 8, 10:29 AM",
+  //     amount: "$0.19",
+  //   },
+  //   {
+  //     id: "FRz8oOp0pzGr",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 7, 6:45 AM",
+  //     amount: "$0.11",
+  //   },
+  //   {
+  //     id: "b2woCpbazeruBl",
+  //     type: "Rakeback",
+  //     status: "Complete",
+  //     date: "Oct 4, 9:25 AM",
+  //     amount: "$0.01",
+  //   },
+  //   {
+  //     id: "3YszIb5ctc88bn",
+  //     type: "Calendar Reward",
+  //     status: "Complete",
+  //     date: "Oct 4, 6:45 AM",
+  //     amount: "$0.11",
+  //   },
+  //   {
+  //     id: "xvnoQ3atcXXAYE9",
+  //     type: "Rakeback",
+  //     status: "Complete",
+  //     date: "Oct 3, 10:01 AM",
+  //     amount: "$1.04",
+  //   },
+  // ];
+
+  // useEffect(() => {
+  //   // Simulate loading data
+  //   const loadTransactions = async () => {
+  //     await new Promise((resolve) => setTimeout(resolve, 800));
+  //     setTransactions(sampleTransactions);
+  //     setIsLoading(false);
+  //   };
+  //   loadTransactions();
+  // }, []);
 
   // Filter transactions
   const filteredTransactions = transactions.filter((tx) => {
-    const matchesSearch =
-      tx.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tx.type.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter =
-      filterType === "all" || tx.type.toLowerCase().includes(filterType);
-    return matchesSearch && matchesFilter;
-  });
+  const matchesSearch =
+    tx.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    tx.type.toLowerCase().includes(searchQuery.toLowerCase());
+  const matchesFilter =
+    filterType === "all" || tx.type.toLowerCase().includes(filterType);
+  return matchesSearch && matchesFilter;
+});
+
 
   // Pagination
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
