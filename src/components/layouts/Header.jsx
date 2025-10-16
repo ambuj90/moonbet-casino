@@ -324,7 +324,12 @@ const Header = ({
                 <img
                   src="/icons/logo.svg"
                   alt="Moonbet Logo"
-                  className="w-30 h-30 object-contain"
+                  className="w-30 h-30 object-contain hidden md:block md:mx-4"
+                />
+                <img
+                  src="/home-assets/mobile-logo.svg"
+                  alt="Moonbet Logo mobile"
+                  className="w-30 h-30 object-contain block md:hidden"
                 />
               </span>
             </Link>
@@ -378,7 +383,7 @@ const Header = ({
               {/* Wallet Dropdown */}
               {walletDropdownOpen && (
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 mt-10 w-[90vw] sm:w-80 bg-[#1A1D24]/95 
+                  className="walletbtnnn absolute left-[80%] sm:left-1/2 md:left-1/2 -translate-x-1/2 mt-10 w-[90vw] sm:w-80 bg-[#1A1D24]/95
                  border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
                   style={{
                     backdropFilter: "blur(20px)",
