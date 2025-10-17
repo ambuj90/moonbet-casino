@@ -117,7 +117,7 @@ const GamePage = () => {
     name: "Blackjack",
     provider: "Evolution",
     gameUrl:
-      "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&controls=1&modestbranding=1",
+      "https://demo.endorphina.network/games-wgl/endorphina2/Jetsetter/index.html?session=50E6A8678E184620A19D743C649A58F6&sign=f3d3014d077bcb4b2d6f9c120e0ace20&launch=https%3A%2F%2Fdemo.endorphina.network%2Forganic%2Fwebsocket%2Flaunch&exit=https%3A%2F%2Fdemo.endorphina.network%2Forganic%2Fwebsocket%2Fclose%3Fsession%3D50E6A8678E184620A19D743C649A58F6%26sign%3Df3d3014d077bcb4b2d6f9c120e0ace20%26exit%3Dhttps%253A%252F%252Fedemo.endorphina.com%252Fsession%252Fback%253Flink%253Dhttps%253A%252F%252Fstaging.slotegrator.com%252Fapi%252Findex.php%252Fv1%252Fclient%252Fexit%252FK25MZ3pkdE8zYmp5amZnUFVZYnJuYVBzNkRKczJnRk81M0hTSEZES3B4OWF5NHRpUUZCNlNPS0hMc2tyNExBSQ%25253D%25253D%252F79ef7f28db9d41a0baec81ddce788447%252F033067ce41ed3603550ac827a381f23b2058142d&profile=nofullscreen_money.xml&resetSettings=true",
   };
 
   return (

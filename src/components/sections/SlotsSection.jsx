@@ -7,62 +7,32 @@ const SlotsSection = () => {
   const scrollContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Slots games data
-  const slotsData = [
-    {
-      id: 1,
-      image: "/games/slot-1.jpg",
-      title: "Sweet Bonanza",
-      provider: "Pragmatic Play",
-      badge: "HOT",
-      badgeColor: "bg-red-500",
-    },
-    {
-      id: 2,
-      image: "/games/slot-2.jpg",
-      title: "Gates of Olympus",
-      provider: "Pragmatic Play",
-      badge: "NEW",
-      badgeColor: "bg-green-500",
-    },
-    {
-      id: 3,
-      image: "/games/slot-3.jpg",
-      title: "Book of Dead",
-      provider: "Play'n GO",
-    },
-    {
-      id: 4,
-      image: "/games/slot-4.jpg",
-      title: "Starburst",
-      provider: "NetEnt",
-      badge: "POPULAR",
-      badgeColor: "bg-purple-500",
-    },
-    {
-      id: 5,
-      image: "/games/slot-5.jpg",
-      title: "Wolf Gold",
-      provider: "Pragmatic Play",
-    },
-    {
-      id: 6,
-      image: "/games/slot-6.jpg",
-      title: "Reactoonz",
-      provider: "Play'n GO",
-      badge: "LIVE",
-      badgeColor: "bg-blue-500",
-    },
-    {
-      id: 7,
-      image: "/games/slot-7.jpg",
-      title: "Gonzo's Quest",
-      provider: "NetEnt",
-    },
-  ];
+  // ✅ Fetch games from API
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const res = await fetch("http://localhost:4001/api/games");
+        const data = await res.json();
 
-  // Check scroll position
+        if (data?.games?.items) {
+          setGames(data.games.items);
+        } else {
+          console.warn("Invalid games API response:", data);
+        }
+      } catch (error) {
+        console.error("Error fetching games:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
+  }, []);
+
+  // ✅ Scroll button logic
   const checkScrollPosition = () => {
     if (!scrollContainerRef.current) return;
 
@@ -117,7 +87,6 @@ const SlotsSection = () => {
           className="flex justify-between items-center mb-10"
         >
           <div className="flex items-center gap-3">
-            {/* Slot Icon SVG */}
             <svg
               className="w-8 h-8 text-[#F07730]"
               fill="currentColor"
@@ -131,99 +100,88 @@ const SlotsSection = () => {
           </div>
 
           <button className="hidden md:flex items-center">
-            <MoonBetButton
-              onClick={() => console.log(`${reward.buttonText} clicked`)}
-            >
+            <MoonBetButton onClick={() => console.log("To the Casino clicked")}>
               To the Casino
             </MoonBetButton>
           </button>
         </motion.div>
 
-        {/* Games Container */}
-        <div className="relative">
-          {/* Scroll Buttons */}
-          {canScrollLeft && (
-            <button
-              onClick={() => scroll("left")}
-              className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-black/80 border border-white/10 rounded-full items-center justify-center text-white hover:bg-white/10 transition-colors"
+        {/* Games Section */}
+        {loading ? (
+          <p className="text-center text-gray-400 py-10">Loading games...</p>
+        ) : (
+          <div className="relative">
+            {/* Scroll Buttons */}
+            {canScrollLeft && (
+              <button
+                onClick={() => scroll("left")}
+                className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-black/80 border border-white/10 rounded-full items-center justify-center text-white hover:bg-white/10 transition-colors"
+              >
+                ←
+              </button>
+            )}
+
+            {canScrollRight && (
+              <button
+                onClick={() => scroll("right")}
+                className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-black/80 border border-white/10 rounded-full items-center justify-center text-white hover:bg-white/10 transition-colors"
+              >
+                →
+              </button>
+            )}
+
+            {/* Slots Grid */}
+            <div
+              ref={scrollContainerRef}
+              className="overflow-x-auto scrollbar-hide pb-4"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
             >
-              ←
-            </button>
-          )}
-
-          {canScrollRight && (
-            <button
-              onClick={() => scroll("right")}
-              className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-black/80 border border-white/10 rounded-full items-center justify-center text-white hover:bg-white/10 transition-colors"
-            >
-              →
-            </button>
-          )}
-
-          {/* Slots Grid */}
-          <div
-            ref={scrollContainerRef}
-            className="overflow-x-auto scrollbar-hide pb-4"
-            style={{
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            }}
-          >
-            <div className="grid grid-flow-col auto-cols-[160px] sm:auto-cols-[180px] md:auto-cols-[200px] gap-4 md:gap-6">
-              {slotsData.map((slot, index) => (
-                <motion.div
-                  key={slot.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                  viewport={{ once: true }}
-                  className="group cursor-pointer"
-                >
-                  <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-[#F07730]/50 transition-all duration-300">
-                    {/* Badge */}
-                    {slot.badge && (
-                      <span
-                        className={`absolute top-2 right-2 z-10 px-2 py-1 ${slot.badgeColor} text-white text-xs font-bold rounded-full animate-pulse`}
-                      >
-                        {slot.badge}
-                      </span>
-                    )}
-
-                    {/* Game Image */}
-                    <div className="aspect-[4/5] relative overflow-hidden bg-gray-800">
-                      <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                        <span className="text-4xl">🎰</span>
+              <div className="grid grid-flow-col auto-cols-[160px] sm:auto-cols-[180px] md:auto-cols-[200px] gap-4 md:gap-6">
+                {games.map((game, index) => (
+                  <motion.div
+                    key={game.uuid}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                    viewport={{ once: true }}
+                    className="group cursor-pointer"
+                  >
+                    <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-[#F07730]/50 transition-all duration-300">
+                      {/* Game Image */}
+                      <div className="aspect-[4/5] relative overflow-hidden bg-gray-800">
+                        <img
+                          src={game.image}
+                          alt={game.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
                       </div>
-                      {/* Replace with actual image */}
-                      {/* <img 
-                        src={slot.image} 
-                        alt={slot.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      /> */}
-                    </div>
 
-                    {/* Game Info */}
-                    <div className="p-3">
-                      <h3 className="text-white font-semibold text-sm truncate">
-                        {slot.title}
-                      </h3>
-                      <p className="text-gray-400 text-xs mt-1">
-                        {slot.provider}
-                      </p>
-                    </div>
+                      {/* Game Info */}
+                      <div className="p-3">
+                        <h3 className="text-white font-semibold text-sm truncate">
+                          {game.name}
+                        </h3>
+                        <p className="text-gray-400 text-xs mt-1">
+                          {game.provider}
+                        </p>
+                      </div>
 
-                    {/* Hover Play Button */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <button className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-6 py-2 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full text-white font-semibold">
-                        PLAY NOW
-                      </button>
+                      {/* Hover Play Button */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <button className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-6 py-2 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full text-white font-semibold">
+                          PLAY NOW
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Mobile View All Button */}
         <motion.div
