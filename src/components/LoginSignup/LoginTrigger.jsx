@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from "react";
 import LoginSignup from "./LoginSignup";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export const LoginTrigger = ({
   buttonText = "Login",
@@ -56,10 +57,24 @@ export const LoginTrigger = ({
   };
 
   const handleLogout = () => {
+    // Remove tokens
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("userid");
+
+    // Update state
     setIsLoggedIn(false);
     setDropdownOpen(false);
+
+    // ✅ Show logout success toast
+    toast.info("You have been logged out successfully", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
   };
 
   const handleOpenModal = () => {
@@ -85,11 +100,7 @@ export const LoginTrigger = ({
           onClick={() => setDropdownOpen(!dropdownOpen)}
           className={`${className} flex items-center justify-center w-9 h-9 rounded-full bg-[#20263a] hover:bg-[#2a324a] transition-all text-white`}
         >
-          <img
-            src="/vite.svg"
-            alt="User"
-            className="w-5 h-5 opacity-90"
-          />
+          <img src="/vite.svg" alt="User" className="w-5 h-5 opacity-90" />
         </button>
 
         {/* Dropdown Menu */}

@@ -1,6 +1,7 @@
 // src/components/LoginSignup/LoginSignup.jsx - Updated with Forgot Password
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 
 // Icon Components
 const GoogleIcon = () => (
@@ -94,44 +95,90 @@ const LoginSignup = ({
   };
 
   const handleLoginSubmit = async () => {
-  try {
-    const res = await fetch("http://localhost:4000/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(loginData),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      // ✅ Save token and user info
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+    try {
+      const res = await fetch("http://localhost:4000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginData),
+      });
+      const data = await res.json();
 
-      if (onLoginSuccess) onLoginSuccess(data);
-    } else {
-      alert(data.message || "Login failed");
+      if (res.ok) {
+        // ✅ Save token and user info
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // ✅ Show success toast
+        toast.success("You have logged in successfully", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+
+        // ✅ Call success callback after short delay
+        setTimeout(() => {
+          if (onLoginSuccess) onLoginSuccess(data);
+        }, 500);
+      } else {
+        // ❌ Show error toast
+        toast.error(data.message || "Login failed", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    } catch (err) {
+      // ❌ Show network error toast
+      toast.error("Network error. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      console.error("Login error:", err);
     }
-  } catch (err) {
-    alert("Network error", err);
-  }
-};
+  };
 
   const handleSignupSubmit = async () => {
-  try {
-    const res = await fetch("http://localhost:4000/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(signupData),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      if (onSignupSuccess) onSignupSuccess(data);
-    } else {
-      alert(data.message || "Signup failed");
+    try {
+      const res = await fetch("http://localhost:4000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(signupData),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        // ✅ Show success toast
+        toast.success("Account created successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+
+        // ✅ Call success callback after short delay
+        setTimeout(() => {
+          if (onSignupSuccess) onSignupSuccess(data);
+        }, 500);
+      } else {
+        // ❌ Show error toast
+        toast.error(data.message || "Signup failed", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    } catch (err) {
+      // ❌ Show network error toast
+      toast.error("Network error. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      console.error("Signup error:", err);
     }
-  } catch (err) {
-    alert("Network error", err);
-  }
-};
+  };
 
   const handleForgotPasswordSubmit = () => {
     console.log("Forgot Password:", forgotPasswordData);

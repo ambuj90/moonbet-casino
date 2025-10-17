@@ -1,4 +1,5 @@
-// src/App.jsx
+// src/App.jsx - SIMPLE FIX FOR CLOSE BUTTON
+
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -13,6 +14,8 @@ import Transactions from "./pages/Transactions";
 import Bets from "./pages/Bets";
 import LoginSignup from "./components/LoginSignup/LoginSignup";
 import GamePage from "./pages/GamePage";
+import { ToastContainer, toast } from "react-toastify";
+import "./styles/toastify-custom.css"; // Your custom styles
 
 // Placeholder pages
 const HoneypotPage = () => (
@@ -53,7 +56,6 @@ const AuthModalHandler = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // ✅ Check if logged in
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
   }, []);
@@ -98,6 +100,16 @@ const AuthModalHandler = ({ children }) => {
 };
 
 function App() {
+  useEffect(() => {
+    // You can remove this after testing
+    const timer = setTimeout(() => {
+      toast.info("Welcome to MoonBet Casino!", {
+        autoClose: 5000,
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <Router>
       <AuthModalHandler>
@@ -117,6 +129,21 @@ function App() {
           </Route>
         </Routes>
       </AuthModalHandler>
+
+      {/* ✅ SIMPLIFIED TOAST CONTAINER - DISABLE closeOnClick */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick={true} // ← Changed from false to true
+        rtl={false}
+        pauseOnFocusLoss={true}
+        draggable={true}
+        pauseOnHover={true}
+        theme="dark"
+        closeButton={true}
+      />
     </Router>
   );
 }
