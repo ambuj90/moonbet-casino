@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import QRCode from "qrcode";
+import WithdrawalConfirmationPopup from "./WithdrawalConfirmationPopup";
 
 const WalletModal = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -31,6 +32,9 @@ const WalletModal = ({ isOpen, onClose }) => {
   const [showWithdrawDropdown, setShowWithdrawDropdown] = useState(false);
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
+
+  const [showWithdrawConfirmation, setShowWithdrawConfirmation] =
+    useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -207,29 +211,41 @@ const WalletModal = ({ isOpen, onClose }) => {
       return;
     }
 
+    // Show the confirmation popup instead of processing immediately
+    setShowWithdrawConfirmation(true);
+  };
+
+  // Add a new function to handle the actual withdrawal after PIN confirmation
+  const handleConfirmWithdraw = async (pin) => {
+    // Your existing withdrawal API call
     const userId = "68eb94c22a7983ea19b0bd6a";
     const withdrawData = {
       currency: selectedWithdrawCoin.symbol.toUpperCase(),
       address: withdrawAddress,
       amount: parseFloat(withdrawAmount),
+      pin: pin, // Include PIN if needed by your API
     };
 
-    fetch(`http://localhost:4001/api/wallet/${userId}/withdraw`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(withdrawData),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        alert("Withdrawal request submitted successfully!");
-        setShowWithdrawModal(false);
-        setWithdrawAddress("");
-        setWithdrawAmount("");
-      })
-      .catch((err) => {
-        console.error("Withdrawal error:", err);
-        alert("Withdrawal failed. Please try again.");
-      });
+    try {
+      const response = await fetch(
+        `http://localhost:4001/api/wallet/${userId}/withdraw`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(withdrawData),
+        }
+      );
+
+      const data = await response.json();
+      alert("Withdrawal request submitted successfully!");
+      setShowWithdrawConfirmation(false);
+      setShowWithdrawModal(false);
+      setWithdrawAddress("");
+      setWithdrawAmount("");
+    } catch (err) {
+      console.error("Withdrawal error:", err);
+      alert("Withdrawal failed. Please try again.");
+    }
   };
 
   const modalVariants = {
@@ -1138,6 +1154,17 @@ const WalletModal = ({ isOpen, onClose }) => {
               </div>
             </div>
           </motion.div>
+          <WithdrawalConfirmationPopup
+            isOpen={showWithdrawConfirmation}
+            onClose={() => setShowWithdrawConfirmation(false)}
+            onConfirm={handleConfirmWithdraw}
+            withdrawalData={{
+              amount: withdrawAmount,
+              currency: selectedWithdrawCoin?.symbol?.toUpperCase() || "SOL",
+              address: withdrawAddress,
+            }}
+            userEmail="ambuj@kadeventures.com" // Pass actual user email
+          />
 
           {renderDepositModal()}
           {renderWithdrawModal()}
