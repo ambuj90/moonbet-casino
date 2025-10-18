@@ -2,8 +2,14 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
+import EmailVerificationPopup from "./EmailVerificationPopup";
 
-const SecuritySection = ({ emailVerified, enable2FA, setEnable2FA }) => {
+const SecuritySection = ({
+  emailVerified,
+  enable2FA,
+  setEnable2FA,
+  userEmail = "user@example.com", // Add userEmail as a prop
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [is2FAUpdating, setIs2FAUpdating] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -16,24 +22,18 @@ const SecuritySection = ({ emailVerified, enable2FA, setEnable2FA }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [showEmailVerificationPopup, setShowEmailVerificationPopup] =
+    useState(false);
 
   // Handle 2FA toggle with API call
   const handle2FAToggle = async () => {
-    // Optimistically update UI immediately
     setEnable2FA(!enable2FA);
     setIs2FAUpdating(true);
 
     try {
-      // Simulate API call (replace with your actual API call)
       await new Promise((resolve) => setTimeout(resolve, 300));
-
-      // If you have an API call, do it here:
-      // await fetch('/api/settings/2fa', {
-      //   method: 'PUT',
-      //   body: JSON.stringify({ enabled: !enable2FA })
-      // });
+      // Add your actual API call here
     } catch (error) {
-      // If API call fails, revert the change
       setEnable2FA(enable2FA);
       console.error("Failed to update 2FA setting:", error);
     } finally {
@@ -41,7 +41,7 @@ const SecuritySection = ({ emailVerified, enable2FA, setEnable2FA }) => {
     }
   };
 
-  // Toggle Switch Component with loading state
+  // Toggle Switch Component
   const ToggleSwitch = ({
     enabled,
     onChange,
@@ -91,16 +91,92 @@ const SecuritySection = ({ emailVerified, enable2FA, setEnable2FA }) => {
 
   const handleSendVerification = async () => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      // For now, simulate the API call
+      // Replace this with your actual API endpoint
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Uncomment and modify this when you have your actual API endpoint:
+      /*
+      const response = await fetch(
+        "http://localhost:4000/api/auth/send-verification-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            email: userEmail,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to send verification email");
+      }
+      */
+
+      // Show the verification popup
+      setShowEmailVerificationPopup(true);
+      toast.success("Verification code sent to your email!");
+    } catch (error) {
+      console.error("Error sending verification:", error);
+      toast.error("Failed to send verification email. Please try again.");
+    } finally {
       setIsLoading(false);
-      alert("Verification email sent!");
-    }, 1000);
+    }
+  };
+
+  const handleEmailVerification = async (otp) => {
+    try {
+      // For now, simulate the API call
+      // Replace this with your actual API endpoint
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // Simulate OTP validation (accept "123456" for testing)
+          if (otp === "123456") {
+            resolve();
+          } else {
+            reject(new Error("Invalid OTP"));
+          }
+        }, 1000);
+      });
+
+      // Uncomment and modify this when you have your actual API endpoint:
+      /*
+      const response = await fetch(
+        "http://localhost:4000/api/auth/verify-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            otp: otp,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Invalid OTP");
+      }
+      */
+
+      toast.success("Email verified successfully!");
+      // Update the parent component or reload as needed
+      window.location.reload();
+      return true;
+    } catch (error) {
+      console.error("Verification error:", error);
+      throw error;
+    }
   };
 
   const handleUpdatePassword = () => {
     setShowPasswordForm(!showPasswordForm);
-    // Reset form when closing
     if (showPasswordForm) {
       setPasswordData({
         currentPassword: "",
@@ -119,7 +195,6 @@ const SecuritySection = ({ emailVerified, enable2FA, setEnable2FA }) => {
   };
 
   const handlePasswordSubmit = async () => {
-    // Validation
     if (
       !passwordData.currentPassword ||
       !passwordData.newPassword ||
@@ -142,9 +217,7 @@ const SecuritySection = ({ emailVerified, enable2FA, setEnable2FA }) => {
     setIsUpdatingPassword(true);
 
     try {
-      // Simulate API call - replace with your actual API
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       toast.success("Password updated successfully");
       setShowPasswordForm(false);
       setPasswordData({
@@ -377,12 +450,12 @@ const SecuritySection = ({ emailVerified, enable2FA, setEnable2FA }) => {
                           r="10"
                           stroke="currentColor"
                           strokeWidth="4"
-                        ></circle>
+                        />
                         <path
                           className="opacity-75"
                           fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
+                        />
                       </svg>
                       Updating...
                     </>
@@ -420,10 +493,23 @@ const SecuritySection = ({ emailVerified, enable2FA, setEnable2FA }) => {
                 unauthorized access
               </p>
             </div>
-            <ToggleSwitch enabled={enable2FA} onChange={setEnable2FA} />
+            <ToggleSwitch
+              enabled={enable2FA}
+              onChange={handle2FAToggle}
+              isLoading={is2FAUpdating}
+            />
           </div>
         </div>
       </div>
+
+      {/* Email Verification Popup */}
+      <EmailVerificationPopup
+        isOpen={showEmailVerificationPopup}
+        onClose={() => setShowEmailVerificationPopup(false)}
+        onVerify={handleEmailVerification}
+        userEmail={userEmail}
+        resendCooldown={60}
+      />
     </motion.div>
   );
 };

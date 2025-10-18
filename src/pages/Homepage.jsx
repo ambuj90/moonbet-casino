@@ -14,7 +14,7 @@ const Homepage = () => {
   return (
     <div className="min-h-screen bg-black">
       <HeroSection />
-      <CasinoWheel />
+      {/* <CasinoWheel /> */}
       <HomeRewardsSection />
       <HomeGamesSection />
       {/* <CasinoWheel2 /> */}
