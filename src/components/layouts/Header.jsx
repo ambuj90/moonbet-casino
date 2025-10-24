@@ -1,25 +1,55 @@
-// src/components/layouts/Header.jsx - Fixed Desktop and Mobile Sidebar Issues
-import React, { useState, useEffect, useRef } from "react";
+// Enhanced Header.jsx with Sidebar Toggle and Futuristic Casino UI
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, Float } from "@react-three/drei";
 import WalletSettingsModal from "../WalletSettingsModal";
 import WalletModal from "../WalletModal";
 import LoginTrigger from "../LoginSignup/LoginTrigger";
+
+// 3D Rotating Coin Component
+const RotatingCoin = () => {
+  const meshRef = useRef();
+
+  return (
+    <Float speed={2} rotationIntensity={2} floatIntensity={0.5}>
+      <mesh ref={meshRef}>
+        <cylinderGeometry args={[0.8, 0.8, 0.15, 32]} />
+        <meshStandardMaterial
+          color="#FFD700"
+          metalness={0.9}
+          roughness={0.1}
+          emissive="#FFA500"
+          emissiveIntensity={0.3}
+        />
+      </mesh>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={1} />
+    </Float>
+  );
+};
 
 const Header = ({
   onMobileSidebarToggle,
   isMobileSidebarOpen,
   onCloseMobileSidebar,
+  onDesktopSidebarToggle,
+  isDesktopSidebarCollapsed = true,
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    isDesktopSidebarCollapsed
+  );
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [walletDropdownOpen, setWalletDropdownOpen] = useState(false);
   const [walletSettingsOpen, setWalletSettingsOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
   const location = useLocation();
   const walletDropdownRef = useRef(null);
 
-  // Add currencies data
+  // Currencies with neon colors
   const currencies = [
     {
       symbol: "BTC",
@@ -86,24 +116,20 @@ const Header = ({
     },
   ];
 
-  // Menu items with submenus
+  // Enhanced menu items with gradient colors
   const menuItems = [
     {
       id: "home",
       label: "Home",
-      icon: (
-        <img
-          src="/icons/home.svg"
-          alt="Home"
-          className="w-6 h-6 object-contain"
-        />
-      ),
+      icon: "🏠",
       path: "/",
+      gradient: "from-blue-500 to-purple-500",
     },
     {
       id: "games",
       label: "Games",
       icon: "🎮",
+      gradient: "from-pink-500 to-purple-500",
       submenu: [
         { path: "/game/honeypot", label: "HoneyPot", icon: "🍯" },
         { path: "/game/coinflip", label: "CoinFlip", icon: "🪙" },
@@ -119,6 +145,7 @@ const Header = ({
       id: "casino",
       label: "Casino",
       icon: "🎰",
+      gradient: "from-yellow-500 to-orange-500",
       submenu: [
         { path: "/casino/slots", label: "Slots", icon: "🎰" },
         { path: "/casino/blackjack", label: "Blackjack", icon: "♠️" },
@@ -127,9 +154,27 @@ const Header = ({
         { path: "/casino/baccarat", label: "Baccarat", icon: "👑" },
       ],
     },
-    { id: "promotions", label: "Promotions", icon: "🎁", path: "/promotions" },
-    { id: "vip", label: "VIP Club", icon: "💎", path: "/vip" },
-    { id: "chat", label: "Live Chat", icon: "💬", path: "/chat" },
+    {
+      id: "promotions",
+      label: "Promotions",
+      icon: "🎁",
+      path: "/promotions",
+      gradient: "from-green-500 to-teal-500",
+    },
+    {
+      id: "vip",
+      label: "VIP Club",
+      icon: "💎",
+      path: "/vip",
+      gradient: "from-purple-500 to-pink-500",
+    },
+    {
+      id: "chat",
+      label: "Live Chat",
+      icon: "💬",
+      path: "/chat",
+      gradient: "from-blue-500 to-cyan-500",
+    },
   ];
 
   const accountItems = [
@@ -140,6 +185,18 @@ const Header = ({
     { path: "/bonuses", label: "My Bonuses", icon: "🎁" },
     { path: "/settings", label: "Settings", icon: "⚙️" },
   ];
+
+  // Toggle desktop sidebar collapse
+  const toggleDesktopSidebar = () => {
+    const newCollapsedState = !sidebarCollapsed;
+    setSidebarCollapsed(newCollapsedState);
+    setActiveSubmenu(null);
+
+    // Notify parent component (Layout) about sidebar state change
+    if (onDesktopSidebarToggle) {
+      onDesktopSidebarToggle(newCollapsedState);
+    }
+  };
 
   const toggleSidebar = () => {
     if (sidebarCollapsed) {
@@ -153,18 +210,12 @@ const Header = ({
     setActiveSubmenu(null);
   };
 
-  const toggleCollapse = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-    setActiveSubmenu(null);
-  };
-
   const toggleSubmenu = (menuId) => {
     if (!sidebarCollapsed) {
       setActiveSubmenu(activeSubmenu === menuId ? null : menuId);
     }
   };
 
-  // Handle mobile sidebar close
   const closeMobileSidebar = () => {
     if (onCloseMobileSidebar) {
       onCloseMobileSidebar();
@@ -191,22 +242,22 @@ const Header = ({
     };
   }, [walletDropdownOpen]);
 
-  // Close sidebar when route changes (desktop only)
+  // Close sidebar when route changes
   useEffect(() => {
     if (!sidebarCollapsed) {
       closeSidebar();
     }
-    // Also close mobile sidebar
     closeMobileSidebar();
   }, [location.pathname]);
 
-  // Prevent body scroll when sidebar is open (full mode only)
+  // Prevent body scroll when sidebar is open
   useEffect(() => {
     if ((sidebarOpen && !sidebarCollapsed) || isMobileSidebarOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
+
     return () => {
       document.body.style.overflow = "unset";
     };
@@ -214,111 +265,46 @@ const Header = ({
 
   return (
     <>
-      <style jsx>{`
-        .menu-item-gradient {
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.3) 0%,
-            rgba(255, 255, 255, 0.05) 50%,
-            rgba(255, 255, 255, 0.3) 100%
-          );
-          box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
-          backdrop-filter: blur(2px);
-          border-radius: 8px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #f07730, #efd28e);
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #efd28e, #f07730);
-        }
-
-        .tooltip {
-          position: absolute;
-          left: 100%;
-          margin-left: 10px;
-          background: rgba(0, 0, 0, 0.9);
-          color: white;
-          padding: 6px 12px;
-          border-radius: 6px;
-          font-size: 14px;
-          white-space: nowrap;
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 0.2s;
-          z-index: 100;
-        }
-
-        .tooltip-trigger:hover .tooltip {
-          opacity: 1;
-        }
-
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .wallet-dropdown {
-          animation: slideDown 0.3s ease-out;
-        }
-
-        .wallet-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .wallet-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-        }
-        .wallet-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 2px;
-        }
-        .wallet-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-      `}</style>
-
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black backdrop-blur-xl border-b border-white/10">
-        <div className="flex items-center justify-between h-16 px-4">
-          {/* Left Section - Desktop Hamburger and Logo */}
-          <div className="flex items-center gap-4">
-            {/* Desktop Hamburger Menu Button - Hidden on Mobile */}
-            <button
-              onClick={toggleSidebar}
-              className="hidden lg:block p-2 hover:bg-white/10 rounded-lg transition-colors relative"
+      {/* DESKTOP HEADER */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="fixed top-0 left-0 right-0 h-16 bg-gradient-to-r from-[#0A0B0D]/95 via-[#141519]/95 to-[#0A0B0D]/95 backdrop-blur-xl border-b border-white/10 z-50"
+      >
+        <div className="h-full px-4 lg:px-6 flex items-center justify-between">
+          {/* Left Section - Logo & Hamburger */}
+          <div className="flex items-center gap-3">
+            {/* Desktop Sidebar Toggle Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleDesktopSidebar}
+              className="hidden lg:flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border border-white/20 rounded-xl hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 group"
             >
-              <svg
-                className={`w-6 h-6 text-white transition-transform duration-300 ${
-                  sidebarOpen ? "rotate-90" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <motion.div
+                animate={{ rotate: sidebarCollapsed ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col gap-1.5"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-full animate-pulse"></span>
-            </button>
+                <span
+                  className={`block h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 transition-all duration-300 ${
+                    sidebarCollapsed ? "w-5" : "w-6"
+                  }`}
+                ></span>
+                <span
+                  className={`block h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 transition-all duration-300 ${
+                    sidebarCollapsed ? "w-3" : "w-4"
+                  }`}
+                ></span>
+                <span
+                  className={`block h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 transition-all duration-300 ${
+                    sidebarCollapsed ? "w-4" : "w-6"
+                  }`}
+                ></span>
+              </motion.div>
+            </motion.button>
 
-            {/* Logo */}
+            {/* Logo with 3D Coin */}
             <Link to="/" className="flex items-center gap-2">
               <span className="flex items-center gap-2 text-xl font-bold text-white tracking-wider">
                 <img
@@ -535,338 +521,367 @@ const Header = ({
             />
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      {/* DESKTOP SIDEBAR - Hidden on Mobile */}
-      {!sidebarCollapsed && (
-        <div
-          className={`hidden lg:block fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 z-40 ${
-            sidebarOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
-          onClick={closeSidebar}
-        />
-      )}
-
-      {/* Desktop Sidebar */}
-      <div
-        className={`hidden lg:block fixed left-0 top-0 h-full bg-gradient-to-b from-[#0A0B0D] to-[#141519] border-r border-white/10 z-50 transition-all duration-300 ${
-          sidebarCollapsed ? "w-20" : "w-50"
-        } ${
-          sidebarOpen || sidebarCollapsed
-            ? "translate-x-0"
-            : "-translate-x-full"
-        }`}
-      >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
-          {!sidebarCollapsed && (
-            <div className="flex items-center gap-3">
-              <Link to="/" className="flex items-center gap-2">
-                <span className="flex items-center gap-2 text-xl font-bold text-white tracking-wider">
-                  <img
-                    src="/icons/logo.svg"
-                    alt="Moonbet Logo"
-                    className="w-30 h-30 object-contain"
-                  />
-                </span>
-              </Link>
-            </div>
-          )}
-
-          {sidebarCollapsed && (
-            <div className="w-full flex justify-center">
-              <Link to="/" className="flex items-center gap-2">
-                <span className="flex items-center gap-2 text-xl font-bold text-white tracking-wider">
-                  <img
-                    src="/home-assets/mobile-logo.svg"
-                    alt="Moonbet Logo"
-                    className="w-30 h-30 object-contain"
-                  />
-                </span>
-              </Link>
-            </div>
-          )}
-
-          {!sidebarCollapsed && (
-            <button
-              onClick={toggleCollapse}
-              className="p-2 hover:bg-white/10 rounded-lg transition-all hover:scale-110"
-              title="Collapse sidebar"
-            >
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-                />
-              </svg>
-            </button>
-          )}
-        </div>
-
-        {/* Expand Button (when collapsed) */}
-        {sidebarCollapsed && (
-          <div className="p-4 border-b border-white/10 flex justify-center">
-            <button
-              onClick={toggleCollapse}
-              className="p-2 hover:bg-white/10 rounded-lg transition-all hover:scale-110"
-              title="Expand sidebar"
-            >
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          </div>
-        )}
-
-        {/* Scrollable Menu */}
-        <div
-          className={`overflow-y-auto custom-scrollbar ${
-            sidebarCollapsed ? "h-[calc(100vh-200px)]" : "h-[calc(100vh-280px)]"
-          }`}
-        >
-          {/* Main Menu */}
-          <div className="p-4">
-            {!sidebarCollapsed && (
-              <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-3">
-                Main Menu
-              </h3>
-            )}
-            <div className="space-y-1">
-              {menuItems.map((item) => (
-                <div key={item.id}>
-                  {item.submenu ? (
-                    <>
-                      <button
-                        onClick={() => toggleSubmenu(item.id)}
-                        className={`w-full flex items-center ${
-                          sidebarCollapsed
-                            ? "justify-center"
-                            : "justify-between"
-                        } px-3 py-2.5 transition-all hover:menu-item-gradient tooltip-trigger relative ${
-                          activeSubmenu === item.id ? "menu-item-gradient" : ""
-                        }`}
-                        style={{ borderRadius: "8px" }}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">{item.icon}</span>
-                          {!sidebarCollapsed && (
-                            <span className="text-white font-medium">
-                              {item.label}
-                            </span>
-                          )}
-                        </div>
-                        {!sidebarCollapsed && (
-                          <svg
-                            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-                              activeSubmenu === item.id ? "rotate-180" : ""
-                            }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 9l-7 7-7-7"
-                            />
-                          </svg>
-                        )}
-                        {sidebarCollapsed && (
-                          <span className="tooltip">{item.label}</span>
-                        )}
-                      </button>
-
-                      {/* Submenu - only show when not collapsed */}
-                      {!sidebarCollapsed && (
-                        <div
-                          className={`overflow-hidden transition-all duration-300 ${
-                            activeSubmenu === item.id ? "max-h-96" : "max-h-0"
-                          }`}
-                        >
-                          <div
-                            className="ml-4 mr-0 mt-1 p-2 space-y-1"
-                            style={{
-                              background: "rgba(0, 0, 0, 0.80)",
-                              boxShadow: "2px 2px 4px 0 rgba(0, 0, 0, 0.25)",
-                              backdropFilter: "blur(2px)",
-                              borderRadius: "8px",
-                            }}
-                          >
-                            {item.submenu.map((subItem) => (
-                              <Link
-                                key={subItem.path}
-                                to={subItem.path}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all hover:bg-white/10 ${
-                                  location.pathname === subItem.path
-                                    ? "bg-white/10 border-l-2 border-[#F07730]"
-                                    : ""
-                                }`}
-                              >
-                                <span className="text-lg opacity-70">
-                                  {subItem.icon}
-                                </span>
-                                <span className="text-gray-300 text-sm">
-                                  {subItem.label}
-                                </span>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <Link
-                      to={item.path}
-                      className={`flex items-center ${
-                        sidebarCollapsed ? "justify-center" : ""
-                      } gap-3 px-3 py-2.5 transition-all hover:menu-item-gradient tooltip-trigger relative ${
-                        location.pathname === item.path
-                          ? "menu-item-gradient"
-                          : ""
-                      }`}
-                      style={{ borderRadius: "8px" }}
-                    >
-                      <span className="text-xl">{item.icon}</span>
-                      {!sidebarCollapsed && (
-                        <span className="text-white font-medium">
-                          {item.label}
-                        </span>
-                      )}
-                      {sidebarCollapsed && (
-                        <span className="tooltip">{item.label}</span>
-                      )}
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Account Menu */}
-          <div className="p-4 border-t border-white/10">
-            {!sidebarCollapsed && (
-              <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-3">
-                Account
-              </h3>
-            )}
-            <div className="space-y-1">
-              {accountItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center ${
-                    sidebarCollapsed ? "justify-center" : ""
-                  } gap-3 px-3 py-2.5 transition-all hover:menu-item-gradient tooltip-trigger relative ${
-                    location.pathname === item.path ? "menu-item-gradient" : ""
-                  }`}
-                  style={{ borderRadius: "8px" }}
-                >
-                  <span className="text-xl opacity-80">{item.icon}</span>
-                  {!sidebarCollapsed && (
-                    <span className="text-white font-medium">{item.label}</span>
-                  )}
-                  {sidebarCollapsed && (
-                    <span className="tooltip">{item.label}</span>
-                  )}
-                </Link>
-              ))}
-
-              <button
-                className={`w-full flex items-center ${
-                  sidebarCollapsed ? "justify-center" : ""
-                } gap-3 px-3 py-2.5 rounded-lg hover:bg-red-500/20 transition-all tooltip-trigger relative`}
-                style={{ borderRadius: "8px" }}
-              >
-                <span className="text-xl">🚪</span>
-                {!sidebarCollapsed && (
-                  <span className="text-red-400 font-medium">Logout</span>
-                )}
-                {sidebarCollapsed && <span className="tooltip">Logout</span>}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        {!sidebarCollapsed && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
-            <div className="flex items-center justify-center gap-4">
-              <button className="text-gray-400 hover:text-white transition-colors">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-              </button>
-              <button className="text-gray-400 hover:text-white transition-colors">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-                </svg>
-              </button>
-              <button className="text-gray-400 hover:text-white transition-colors">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z" />
-                </svg>
-              </button>
-              <button className="text-gray-400 hover:text-white transition-colors">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* MOBILE SIDEBAR - Only shows on mobile */}
-      <div className="lg:hidden">
-        {/* Mobile Backdrop */}
-        {isMobileSidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-            onClick={closeMobileSidebar}
+      {/* DESKTOP SIDEBAR - Collapsible */}
+      <div className="hidden lg:block">
+        {/* Backdrop for mobile/tablet */}
+        {sidebarOpen && !sidebarCollapsed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            onClick={closeSidebar}
           />
         )}
 
+        {/* Desktop Sidebar with Glassmorphism */}
+        <motion.aside
+          initial={false}
+          animate={{
+            width: sidebarCollapsed ? 80 : 256,
+            x: 0,
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className={`fixed left-0 top-16 bottom-0 bg-gradient-to-b from-[#0A0B0D]/95 to-[#141519]/95 backdrop-blur-xl border-r border-white/10 z-40 overflow-hidden`}
+        >
+          <div className="h-full overflow-y-auto custom-scrollbar">
+            {/* Main Menu */}
+            <div className="p-4">
+              <AnimatePresence mode="wait">
+                {!sidebarCollapsed && (
+                  <motion.h3
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-3"
+                  >
+                    Main Menu
+                  </motion.h3>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-1">
+                {menuItems.map((item) => (
+                  <div key={item.id}>
+                    {item.submenu ? (
+                      <>
+                        <motion.button
+                          whileHover={{ scale: sidebarCollapsed ? 1.1 : 1.02 }}
+                          onClick={() => toggleSubmenu(item.id)}
+                          className={`w-full flex items-center ${
+                            sidebarCollapsed
+                              ? "justify-center"
+                              : "justify-between"
+                          } px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden`}
+                        >
+                          {/* Background gradient on hover */}
+                          <div
+                            className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
+                          ></div>
+
+                          <div
+                            className={`flex items-center ${
+                              sidebarCollapsed ? "" : "gap-3"
+                            } relative z-10`}
+                          >
+                            <motion.span
+                              whileHover={{ rotate: 360 }}
+                              transition={{ duration: 0.5 }}
+                              className="text-xl"
+                            >
+                              {item.icon}
+                            </motion.span>
+                            <AnimatePresence>
+                              {!sidebarCollapsed && (
+                                <motion.span
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -20 }}
+                                  className="text-white font-medium"
+                                >
+                                  {item.label}
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </div>
+
+                          {!sidebarCollapsed && (
+                            <motion.svg
+                              animate={{
+                                rotate: activeSubmenu === item.id ? 180 : 0,
+                              }}
+                              className="w-4 h-4 text-gray-400 relative z-10"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </motion.svg>
+                          )}
+
+                          {/* Tooltip for collapsed state */}
+                          {sidebarCollapsed && (
+                            <div className="absolute left-full ml-2 px-2 py-1 bg-[#1A1B23]/95 backdrop-blur-lg border border-white/20 rounded-lg text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                              {item.label}
+                            </div>
+                          )}
+                        </motion.button>
+
+                        {/* Submenu with animation */}
+                        <AnimatePresence>
+                          {activeSubmenu === item.id && !sidebarCollapsed && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="ml-4 mr-0 mt-1 overflow-hidden"
+                            >
+                              <div className="p-2 space-y-1 bg-black/40 backdrop-blur-md rounded-xl border border-white/5">
+                                {item.submenu.map((subItem, index) => (
+                                  <motion.div
+                                    key={subItem.path}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                  >
+                                    <Link
+                                      to={subItem.path}
+                                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 hover:bg-white/10 ${
+                                        location.pathname === subItem.path
+                                          ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-l-2 border-purple-500"
+                                          : ""
+                                      }`}
+                                      onClick={closeSidebar}
+                                    >
+                                      <span className="text-lg opacity-70">
+                                        {subItem.icon}
+                                      </span>
+                                      <span className="text-gray-300 text-sm">
+                                        {subItem.label}
+                                      </span>
+                                    </Link>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </>
+                    ) : (
+                      <motion.div
+                        whileHover={{ scale: sidebarCollapsed ? 1.1 : 1.02 }}
+                        className="relative group"
+                      >
+                        <Link
+                          to={item.path}
+                          className={`flex items-center ${
+                            sidebarCollapsed ? "justify-center" : "gap-3"
+                          } px-3 py-2.5 rounded-xl transition-all duration-300 relative overflow-hidden ${
+                            location.pathname === item.path
+                              ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20"
+                              : ""
+                          }`}
+                          onClick={closeSidebar}
+                        >
+                          {/* Background gradient on hover */}
+                          <div
+                            className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
+                          ></div>
+
+                          <motion.span
+                            whileHover={{ rotate: 360 }}
+                            transition={{ duration: 0.5 }}
+                            className="text-xl relative z-10"
+                          >
+                            {item.icon}
+                          </motion.span>
+                          <AnimatePresence>
+                            {!sidebarCollapsed && (
+                              <motion.span
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="text-white font-medium relative z-10"
+                              >
+                                {item.label}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+
+                          {/* Active indicator */}
+                          {location.pathname === item.path && (
+                            <motion.div
+                              layoutId="activeIndicator"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-r-full"
+                            />
+                          )}
+
+                          {/* Tooltip for collapsed state */}
+                          {sidebarCollapsed && (
+                            <div className="absolute left-full ml-2 px-2 py-1 bg-[#1A1B23]/95 backdrop-blur-lg border border-white/20 rounded-lg text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                              {item.label}
+                            </div>
+                          )}
+                        </Link>
+                      </motion.div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Account Menu */}
+            <div className="p-4 border-t border-white/10">
+              <AnimatePresence mode="wait">
+                {!sidebarCollapsed && (
+                  <motion.h3
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-3"
+                  >
+                    Account
+                  </motion.h3>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-1">
+                {accountItems.map((item, index) => (
+                  <motion.div
+                    key={item.path}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: sidebarCollapsed ? 1.1 : 1.02 }}
+                    className="relative group"
+                  >
+                    <Link
+                      to={item.path}
+                      className={`flex items-center ${
+                        sidebarCollapsed ? "justify-center" : "gap-3"
+                      } px-3 py-2.5 rounded-xl transition-all duration-300 hover:bg-white/10 ${
+                        location.pathname === item.path
+                          ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20"
+                          : ""
+                      }`}
+                      onClick={closeSidebar}
+                    >
+                      <span className="text-xl opacity-80">{item.icon}</span>
+                      <AnimatePresence>
+                        {!sidebarCollapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="text-white font-medium"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Tooltip for collapsed state */}
+                      {sidebarCollapsed && (
+                        <div className="absolute left-full ml-2 px-2 py-1 bg-[#1A1B23]/95 backdrop-blur-lg border border-white/20 rounded-lg text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                          {item.label}
+                        </div>
+                      )}
+                    </Link>
+                  </motion.div>
+                ))}
+
+                <motion.button
+                  whileHover={{ scale: sidebarCollapsed ? 1.1 : 1.02 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`w-full flex items-center ${
+                    sidebarCollapsed ? "justify-center" : "gap-3"
+                  } px-3 py-2.5 rounded-xl bg-gradient-to-r from-red-500/20 to-pink-500/20 hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-300 group relative`}
+                >
+                  <span className="text-xl">🚪</span>
+                  <AnimatePresence>
+                    {!sidebarCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="text-red-400 font-medium"
+                      >
+                        Logout
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Tooltip for collapsed state */}
+                  {sidebarCollapsed && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-[#1A1B23]/95 backdrop-blur-lg border border-white/20 rounded-lg text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                      Logout
+                    </div>
+                  )}
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Social Links - Only show when expanded */}
+            <AnimatePresence>
+              {!sidebarCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="p-4 border-t border-white/10"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    {["twitter", "telegram", "discord"].map((social) => (
+                      <motion.button
+                        key={social}
+                        whileHover={{ scale: 1.2, y: -5 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2 bg-white/5 backdrop-blur-lg border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-300"
+                      >
+                        <span className="text-lg">
+                          {social === "twitter" && "𝕏"}
+                          {social === "telegram" && "✈️"}
+                          {social === "discord" && "💬"}
+                        </span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.aside>
+      </div>
+
+      {/* MOBILE SIDEBAR - Keep existing mobile sidebar code */}
+      <div className="lg:hidden">
+        {/* Mobile Backdrop */}
+        <AnimatePresence>
+          {isMobileSidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              onClick={closeMobileSidebar}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Mobile Sidebar */}
-        <div
-          className={`fixed left-0 top-16 bottom-0 w-64 bg-gradient-to-b from-[#0A0B0D] to-[#141519] border-r border-white/10 z-50 transform transition-transform duration-300 ${
-            isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        <motion.div
+          initial={{ x: "-100%" }}
+          animate={{ x: isMobileSidebarOpen ? 0 : "-100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="fixed left-0 top-16 bottom-0 w-64 bg-gradient-to-b from-[#0A0B0D]/95 to-[#141519]/95 backdrop-blur-xl border-r border-white/10 z-50"
         >
           <div className="overflow-y-auto h-full custom-scrollbar pb-20">
             {/* Main Menu */}
@@ -879,25 +894,25 @@ const Header = ({
                   <div key={item.id}>
                     {item.submenu ? (
                       <>
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
                           onClick={() => toggleSubmenu(item.id)}
-                          className={`w-full flex items-center justify-between px-3 py-2.5 transition-all hover:menu-item-gradient ${
-                            activeSubmenu === item.id
-                              ? "menu-item-gradient"
-                              : ""
-                          }`}
-                          style={{ borderRadius: "8px" }}
+                          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-300 hover:bg-white/10 relative overflow-hidden group"
                         >
-                          <div className="flex items-center gap-3">
+                          <div
+                            className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
+                          ></div>
+                          <div className="flex items-center gap-3 relative z-10">
                             <span className="text-xl">{item.icon}</span>
                             <span className="text-white font-medium">
                               {item.label}
                             </span>
                           </div>
-                          <svg
-                            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-                              activeSubmenu === item.id ? "rotate-180" : ""
-                            }`}
+                          <motion.svg
+                            animate={{
+                              rotate: activeSubmenu === item.id ? 180 : 0,
+                            }}
+                            className="w-4 h-4 text-gray-400 relative z-10"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -908,59 +923,60 @@ const Header = ({
                               strokeWidth={2}
                               d="M19 9l-7 7-7-7"
                             />
-                          </svg>
-                        </button>
+                          </motion.svg>
+                        </motion.button>
 
-                        {/* Submenu */}
-                        <div
-                          className={`overflow-hidden transition-all duration-300 ${
-                            activeSubmenu === item.id ? "max-h-96" : "max-h-0"
-                          }`}
-                        >
-                          <div
-                            className="ml-4 mr-0 mt-1 p-2 space-y-1"
-                            style={{
-                              background: "rgba(0, 0, 0, 0.80)",
-                              boxShadow: "2px 2px 4px 0 rgba(0, 0, 0, 0.25)",
-                              backdropFilter: "blur(2px)",
-                              borderRadius: "8px",
-                            }}
-                          >
-                            {item.submenu.map((subItem) => (
-                              <Link
-                                key={subItem.path}
-                                to={subItem.path}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all hover:bg-white/10 ${
-                                  location.pathname === subItem.path
-                                    ? "bg-white/10 border-l-2 border-[#F07730]"
-                                    : ""
-                                }`}
-                                onClick={closeMobileSidebar}
-                              >
-                                <span className="text-lg opacity-70">
-                                  {subItem.icon}
-                                </span>
-                                <span className="text-gray-300 text-sm">
-                                  {subItem.label}
-                                </span>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
+                        {/* Mobile Submenu */}
+                        <AnimatePresence>
+                          {activeSubmenu === item.id && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="ml-4 mr-0 mt-1 overflow-hidden"
+                            >
+                              <div className="p-2 space-y-1 bg-black/40 backdrop-blur-md rounded-xl">
+                                {item.submenu.map((subItem) => (
+                                  <Link
+                                    key={subItem.path}
+                                    to={subItem.path}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all hover:bg-white/10 ${
+                                      location.pathname === subItem.path
+                                        ? "bg-white/10 border-l-2 border-purple-500"
+                                        : ""
+                                    }`}
+                                    onClick={closeMobileSidebar}
+                                  >
+                                    <span className="text-lg opacity-70">
+                                      {subItem.icon}
+                                    </span>
+                                    <span className="text-gray-300 text-sm">
+                                      {subItem.label}
+                                    </span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </>
                     ) : (
                       <Link
                         to={item.path}
-                        className={`flex items-center gap-3 px-3 py-2.5 transition-all hover:menu-item-gradient ${
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 hover:bg-white/10 relative overflow-hidden group ${
                           location.pathname === item.path
-                            ? "menu-item-gradient"
+                            ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20"
                             : ""
                         }`}
-                        style={{ borderRadius: "8px" }}
                         onClick={closeMobileSidebar}
                       >
-                        <span className="text-xl">{item.icon}</span>
-                        <span className="text-white font-medium">
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
+                        ></div>
+                        <span className="text-xl relative z-10">
+                          {item.icon}
+                        </span>
+                        <span className="text-white font-medium relative z-10">
                           {item.label}
                         </span>
                       </Link>
@@ -970,7 +986,7 @@ const Header = ({
               </div>
             </div>
 
-            {/* Account Menu */}
+            {/* Mobile Account Menu */}
             <div className="p-4 border-t border-white/10">
               <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-3">
                 Account
@@ -980,12 +996,11 @@ const Header = ({
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center gap-3 px-3 py-2.5 transition-all hover:menu-item-gradient ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/10 ${
                       location.pathname === item.path
-                        ? "menu-item-gradient"
+                        ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20"
                         : ""
                     }`}
-                    style={{ borderRadius: "8px" }}
                     onClick={closeMobileSidebar}
                   >
                     <span className="text-xl opacity-80">{item.icon}</span>
@@ -993,17 +1008,14 @@ const Header = ({
                   </Link>
                 ))}
 
-                <button
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-500/20 transition-all"
-                  style={{ borderRadius: "8px" }}
-                >
+                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-red-500/20 to-pink-500/20 hover:from-red-500/30 hover:to-pink-500/30 transition-all duration-300">
                   <span className="text-xl">🚪</span>
                   <span className="text-red-400 font-medium">Logout</span>
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Wallet Settings Modal */}
@@ -1017,6 +1029,24 @@ const Header = ({
         isOpen={walletModalOpen}
         onClose={() => setWalletModalOpen(false)}
       />
+
+      {/* Custom Scrollbar Styles */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #8b5cf6, #ec4899);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #9333ea, #f43f5e);
+        }
+      `}</style>
     </>
   );
 };

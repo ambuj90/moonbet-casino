@@ -202,7 +202,7 @@ const HeroSection = () => {
 
       {/* Recent Wins Section */}
       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/90 to-transparent">
-        <div className="relative mt-[40px] sm:mt-[54px] md:mt-[70px] lg:mt-[54px]">
+        <div className="relative">
           {/* Recent Wins Label with Animation */}
           <motion.div
             className="flex items-center gap-2 px-2 sm:px-4 py-2"
