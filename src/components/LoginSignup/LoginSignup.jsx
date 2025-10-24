@@ -97,83 +97,84 @@ const LoginSignup = ({
   };
 
   const handleLoginSubmit = async () => {
-  try {
-    const { data } = await axios.post(
-      "/auth-service/api/auth/login",
-      loginData
-    );
+    try {
+      const { data } = await axios.post(
+        "/auth-service/api/auth/login",
+        loginData
+      );
 
-    if (data?.token) {
-      // ✅ Save only token and essential user fields
-      localStorage.setItem("token", data.token);
+      if (data?.token) {
+        // ✅ Save only token and essential user fields
+        localStorage.setItem("token", data.token);
 
-      if (data.user) {
-        const { id, username, email, kycStatus } = data.user;
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ id, username, email, kycStatus })
-        );
+        if (data.user) {
+          const { id, username, email, kycStatus } = data.user;
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ id, username, email, kycStatus })
+          );
+        }
+
+        toast.success("You have logged in successfully", {
+          position: "top-right",
+          autoClose: 3000,
+          closeOnClick: true,
+        });
+
+        // ✅ Trigger login success callback
+        setTimeout(() => {
+          if (onLoginSuccess) onLoginSuccess(data);
+        }, 500);
+      } else {
+        toast.error(data.message || "Login failed", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
-
-      toast.success("You have logged in successfully", {
-        position: "top-right",
-        autoClose: 3000,
-        closeOnClick: true,
-      });
-
-      // ✅ Trigger login success callback
-      setTimeout(() => {
-        if (onLoginSuccess) onLoginSuccess(data);
-      }, 500);
-    } else {
-      toast.error(data.message || "Login failed", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+    } catch (err) {
+      console.error("Login error:", err);
+      toast.error(
+        err.response?.data?.message || "Network error. Please try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+          closeOnClick: true,
+          pauseOnHover: true,
+        }
+      );
     }
-  } catch (err) {
-    console.error("Login error:", err);
-    toast.error(
-      err.response?.data?.message || "Network error. Please try again.",
-      {
+  };
+
+  const handleSignupSubmit = async () => {
+    try {
+      const { data } = await axios.post(
+        "/auth-service/api/auth/register",
+        signupData
+      );
+
+      toast.success("Account created successfully!", {
         position: "top-right",
         autoClose: 3000,
-      }
-    );
-  }
-};
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
-const handleSignupSubmit = async () => {
-  try {
-    const { data } = await axios.post(
-      "/auth-service/api/auth/register",
-      signupData
-    );
-
-    toast.success("Account created successfully!", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-
-    setTimeout(() => {
-      if (onSignupSuccess) onSignupSuccess(data);
-    }, 500);
-  } catch (err) {
-    console.error("Signup error:", err);
-    toast.error(
-      err.response?.data?.message || "Signup failed. Please try again.",
-      {
-        position: "top-right",
-        autoClose: 3000,
-      }
-    );
-  }
-};
-
+      setTimeout(() => {
+        if (onSignupSuccess) onSignupSuccess(data);
+      }, 500);
+    } catch (err) {
+      console.error("Signup error:", err);
+      toast.error(
+        err.response?.data?.message || "Signup failed. Please try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    }
+  };
 
   const handleForgotPasswordSubmit = () => {
     console.log("Forgot Password:", forgotPasswordData);

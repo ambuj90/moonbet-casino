@@ -17,6 +17,7 @@ import GamePage from "./pages/GamePage";
 import { ToastContainer, toast } from "react-toastify";
 import "./styles/toastify-custom.css"; // Your custom styles
 import AuthTest from "./pages/AuthTest";
+import "react-toastify/dist/ReactToastify.css";
 
 // Placeholder pages
 const HoneypotPage = () => (
