@@ -257,14 +257,14 @@ const Header = ({
       id: "promotions",
       label: "Promotions",
       icon: "🎁",
-      path: "/promotions",
+      path: "#",
       gradient: "from-green-500 to-teal-500",
     },
     {
       id: "vip",
       label: "VIP Club",
       icon: "💎",
-      path: "/vip",
+      path: "#",
       gradient: "from-purple-500 to-pink-500",
     },
     {
@@ -277,11 +277,11 @@ const Header = ({
   ];
 
   const accountItems = [
-    { path: "/profile", label: "My Profile", icon: "👤" },
-    { path: "/wallet", label: "Wallet", icon: "💳" },
+    { path: "#", label: "My Profile", icon: "👤" },
+    { path: "#", label: "Wallet", icon: "💳" },
     { path: "/bet-history", label: "Bet History", icon: "📊" },
     { path: "/transactions", label: "Transactions", icon: "💸" },
-    { path: "/bonuses", label: "My Bonuses", icon: "🎁" },
+    { path: "#", label: "My Bonuses", icon: "🎁" },
     { path: "/settings", label: "Settings", icon: "⚙️" },
   ];
 
@@ -845,7 +845,22 @@ const Header = ({
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
-                                className="text-white font-medium relative z-10"
+                                className="text-white font-medium relative z-10 cursor-pointer"
+                                onClick={() => {
+                                  if (item.id === "chat") {
+                                    // ✅ Open Tidio chat if available
+                                    if (window.tidioChatApi) {
+                                      window.tidioChatApi.open();
+                                    } else {
+                                      console.warn(
+                                        "Tidio chat not loaded yet."
+                                      );
+                                    }
+                                  } else if (item.path) {
+                                    // ✅ For other menu items — normal navigation
+                                    navigate(item.path);
+                                  }
+                                }}
                               >
                                 {item.label}
                               </motion.span>
