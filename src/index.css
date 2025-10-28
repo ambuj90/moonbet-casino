@@ -51,7 +51,7 @@
       var(--color-casino-darker)
     );
     min-height: 100vh;
-    font-family: "Neue Plak", system-ui, -apple-system, sans-serif;
+    font-family: "Neue Plak", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -62,7 +62,7 @@
   h4,
   h5,
   h6 {
-    font-family: "Neuropolitical", "Neue Plak", system-ui, sans-serif;
+    font-family: "Neuropolitical", sans-serif;
     letter-spacing: 0.025em;
   }
 }
