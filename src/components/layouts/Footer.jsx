@@ -1,6 +1,6 @@
 // =====================================
 // FILE: src/components/Footer.jsx
-// MoonBet Casino Footer - Futuristic Tailwind CSS Version
+// MoonBet Casino Footer - Fully Responsive Version
 // =====================================
 import React from "react";
 import { Link } from "react-router-dom";
@@ -96,7 +96,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="relative w-full bg-black overflow-hidden min-h-[800px]">
+    <footer className="relative w-full bg-black overflow-hidden min-h-[600px] md:min-h-[700px] lg:min-h-[800px]">
       {/* Background Image Container */}
       <div className="absolute inset-0 w-full h-full z-0">
         <img
@@ -110,174 +110,226 @@ const Footer = () => {
 
       {/* Footer Content */}
       <motion.div
-        className="relative z-10 py-8 flex flex-col min-h-[800px]"
+        className="relative z-10 py-6 md:py-8 flex flex-col min-h-[600px] md:min-h-[700px] lg:min-h-[800px]"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={containerVariants}
       >
-        <div className="max-w-[1366px] mx-auto px-6 w-full flex flex-col h-full">
+        <div className="max-w-[1366px] mx-auto px-4 sm:px-6 w-full flex flex-col h-full">
           {/* Top Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-12 pt-5">
-            {/* Brand Column */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-8 md:gap-12 pt-5">
+            {/* Brand Column - Mobile Centered */}
             <motion.div
-              className="flex flex-col lg:pr-10 text-center lg:text-left items-center lg:items-start"
+              className="flex flex-col lg:pr-10 text-center lg:text-left items-center lg:items-start mb-6 md:mb-0"
               variants={itemVariants}
             >
-              <div className="flex items-center gap-3 mb-5">
+              {/* Logo - Responsive Size */}
+              <div className="flex items-center gap-3 mb-4 md:mb-5">
                 <img
                   src="/icons/logo.svg"
-                  alt="Wallet Icon"
-                  className="w-60  object-contain"
+                  alt="MoonBet Logo"
+                  className="w-40 sm:w-48 md:w-52 lg:w-60 object-contain"
                 />
               </div>
 
-              <p className="text-sm leading-relaxed text-white/70 max-w-[320px] mb-2">
+              {/* Description - Better Mobile Typography */}
+              <p className="text-xs sm:text-sm leading-relaxed text-white/70 max-w-[280px] sm:max-w-[320px] mb-3 md:mb-2 px-4 sm:px-0">
                 Moonbet operates as a decentralized crypto casino on the Solana
                 blockchain. Built by crypto natives for players 18+
               </p>
 
+              {/* Email - Mobile Friendly */}
               <motion.div
-                className="flex items-center gap-2 mt-2"
+                className="flex items-center gap-2 mt-2 mb-4"
                 whileHover={{ scale: 1.05 }}
               >
-                <span className="text-lg text-orange-500">✉</span>
+                <span className="text-base sm:text-lg text-orange-500">✉</span>
                 <a
                   href="mailto:support@moonbet.games"
-                  className="text-sm text-white/80 hover:text-orange-500 transition-colors duration-300"
+                  className="text-xs sm:text-sm text-white/80 hover:text-orange-500 transition-colors duration-300"
                 >
                   support@moonbet.games
                 </a>
               </motion.div>
 
-              {/* Social Links with Neon Glow */}
-              <div className="flex gap-4 mt-3">
+              {/* Social Links - Better Mobile Spacing */}
+              <div className="flex gap-3 sm:gap-4 mt-2 md:mt-3">
                 {socialIcons.map((social, index) => (
                   <motion.a
                     key={index}
                     href="#"
-                    className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 text-white/70 transition-all duration-300 hover:text-white"
+                    className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 text-white/70 transition-all duration-300 hover:text-white"
                     variants={glowVariants}
                     initial="initial"
                     whileHover="hover"
                     whileTap={{ scale: 0.95 }}
                     aria-label={social.name}
                   >
-                    {social.icon}
+                    <div className="scale-75 sm:scale-100">{social.icon}</div>
                   </motion.a>
                 ))}
               </div>
             </motion.div>
 
-            {/* Footer Columns - Desktop: 3 columns, Mobile: horizontal scroll */}
-            <div className="md:contents flex flex-row justify-center gap-8 md:gap-0">
-              {/* About Us Column */}
-              <motion.div
-                className="flex flex-col gap-5 lg:pt-[85px] text-left min-w-[140px]"
-                variants={itemVariants}
-              >
-                <h3 className="text-base font-semibold text-white mb-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
-                  About Us
-                </h3>
-                <ul className="flex flex-col gap-3">
-                  {footerLinks.aboutUs.map((link, index) => (
-                    <li key={index}>
-                      <Link
-                        to={link.path}
-                        className="text-sm text-white/70 hover:text-orange-500 transition-all duration-300 inline-block hover:translate-x-1"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
+            {/* Footer Links Section - Mobile Optimized Grid */}
+            <div className="col-span-1 md:col-span-1 lg:col-span-3">
+              {/* Mobile: 2 columns, Tablet: 3 columns, Desktop: 3 columns */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
+                {/* About Us Column */}
+                <motion.div
+                  className="flex flex-col gap-3 md:gap-5 lg:pt-[85px] text-left"
+                  variants={itemVariants}
+                >
+                  <h3 className="text-sm sm:text-base font-semibold text-white mb-1 md:mb-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                    About Us
+                  </h3>
+                  <ul className="flex flex-col gap-2 md:gap-3">
+                    {footerLinks.aboutUs.slice(0, 3).map((link, index) => (
+                      <li key={index}>
+                        <Link
+                          to={link.path}
+                          className="text-xs sm:text-sm text-white/70 hover:text-orange-500 transition-all duration-300 inline-block hover:translate-x-1"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                    {/* Hide extra links on mobile, show on tablet+ */}
+                    <div className="hidden sm:flex flex-col gap-2 md:gap-3">
+                      {footerLinks.aboutUs.slice(3).map((link, index) => (
+                        <li key={index + 3}>
+                          <Link
+                            to={link.path}
+                            className="text-xs sm:text-sm text-white/70 hover:text-orange-500 transition-all duration-300 inline-block hover:translate-x-1"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </div>
+                  </ul>
+                </motion.div>
 
-              {/* Support Column */}
-              <motion.div
-                className="flex flex-col gap-5 lg:pt-[85px] text-left min-w-[140px]"
-                variants={itemVariants}
-              >
-                <h3 className="text-base font-semibold text-white mb-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
-                  Support
-                </h3>
-                <ul className="flex flex-col gap-3">
-                  {footerLinks.support.map((link, index) => (
-                    <li key={index}>
-                      <Link
-                        to={link.path}
-                        className="text-sm text-white/70 hover:text-orange-500 transition-all duration-300 inline-block hover:translate-x-1"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
+                {/* Support Column */}
+                <motion.div
+                  className="flex flex-col gap-3 md:gap-5 lg:pt-[85px] text-left"
+                  variants={itemVariants}
+                >
+                  <h3 className="text-sm sm:text-base font-semibold text-white mb-1 md:mb-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                    Support
+                  </h3>
+                  <ul className="flex flex-col gap-2 md:gap-3">
+                    {footerLinks.support.map((link, index) => (
+                      <li key={index}>
+                        <Link
+                          to={link.path}
+                          className="text-xs sm:text-sm text-white/70 hover:text-orange-500 transition-all duration-300 inline-block hover:translate-x-1"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
 
-              {/* Moonbet Column */}
-              <motion.div
-                className="flex flex-col gap-5 lg:pt-[85px] text-left min-w-[140px]"
-                variants={itemVariants}
-              >
-                <h3 className="text-base font-semibold text-white mb-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
-                  Moonbet
-                </h3>
-                <ul className="flex flex-col gap-3">
-                  {footerLinks.moonbet.map((link, index) => (
-                    <li key={index}>
-                      <Link
-                        to={link.path}
-                        className="text-sm text-white/70 hover:text-orange-500 transition-all duration-300 inline-block hover:translate-x-1"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
+                {/* Moonbet Column - Full width on mobile */}
+                <motion.div
+                  className="flex flex-col gap-3 md:gap-5 lg:pt-[85px] text-left col-span-2 sm:col-span-1"
+                  variants={itemVariants}
+                >
+                  <h3 className="text-sm sm:text-base font-semibold text-white mb-1 md:mb-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                    Moonbet
+                  </h3>
+                  <ul className="flex flex-col gap-2 md:gap-3">
+                    {footerLinks.moonbet.map((link, index) => (
+                      <li key={index}>
+                        <Link
+                          to={link.path}
+                          className="text-xs sm:text-sm text-white/70 hover:text-orange-500 transition-all duration-300 inline-block hover:translate-x-1"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              </div>
+
+              {/* Mobile Only - Show hidden About Us links */}
+              <div className="mt-6 sm:hidden">
+                <motion.div
+                  className="flex flex-col gap-3 text-left"
+                  variants={itemVariants}
+                >
+                  <h3 className="text-sm font-semibold text-white mb-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                    More
+                  </h3>
+                  <ul className="flex flex-col gap-2">
+                    {footerLinks.aboutUs.slice(3).map((link, index) => (
+                      <li key={index}>
+                        <Link
+                          to={link.path}
+                          className="text-xs text-white/70 hover:text-orange-500 transition-all duration-300 inline-block hover:translate-x-1"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              </div>
             </div>
           </div>
 
-          {/* Spacer for astronauts */}
-          <div className="flex-1 min-h-[200px] lg:min-h-[300px]" />
+          {/* Spacer for astronauts - Responsive Heights */}
+          <div className="flex-1 min-h-[100px] sm:min-h-[150px] md:min-h-[200px] lg:min-h-[300px]" />
 
-          {/* Bottom Section with Glassmorphism */}
+          {/* Bottom Section - Mobile Optimized */}
           <motion.div
-            className="flex flex-col sm:flex-row justify-between items-center py-8 gap-4  mb-20 lg:mb-0"
+            className="flex flex-col sm:flex-row justify-between items-center py-6 md:py-8 gap-4 mb-20 sm:mb-16 md:mb-12 lg:mb-0"
             variants={itemVariants}
           >
-            <div className="flex items-center gap-4">
+            {/* BeGambleAware - Mobile Stack */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
               <motion.div
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-lg rounded-lg border border-white/10"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 backdrop-blur-lg rounded-lg border border-white/10 w-full sm:w-auto justify-center sm:justify-start"
                 whileHover={{
                   scale: 1.05,
                   boxShadow: "0 0 20px rgba(255, 107, 0, 0.3)",
                 }}
               >
-                {BegambleawareIcon}
-                <span className="text-sm font-medium text-white/80 hidden sm:inline">
+                <div className="scale-90 sm:scale-100">{BegambleawareIcon}</div>
+                <span className="text-xs sm:text-sm font-medium text-white/80">
                   BeGambleAware
                 </span>
-                <span className="text-base font-bold text-orange-500">18+</span>
+                <span className="text-sm sm:text-base font-bold text-orange-500">
+                  18+
+                </span>
               </motion.div>
+
+              {/* Copyright - Centered on Mobile */}
+            </div>
+            <div className="text-xs sm:text-sm text-white/60 text-center sm:text-center hidden md:block">
+              ©MoonBet {currentYear}
             </div>
 
-            <div className="text-sm text-white/60">©MoonBet {currentYear}</div>
-
+            {/* Contact Button - Full Width on Mobile */}
             <motion.button
-              className="flex items-center gap-2 px-5 py-2.5 bg-white/5 backdrop-blur-lg border border-white/20 rounded-lg text-white text-sm font-medium transition-all duration-300 hover:bg-orange-500/20 hover:border-orange-500/50"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="hidden md:flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 backdrop-blur-lg rounded-lg border border-white/10 w-full sm:w-auto justify-center sm:justify-start"
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0 0 20px rgba(255, 107, 0, 0.3)",
+              }}
             >
-              {ContactIcon}
-              <span className="hidden sm:inline">Contact Us</span>
+              <div className="scale-90 sm:scale-100">{ContactIcon}</div>
+              <span>Contact Us</span>
             </motion.button>
           </motion.div>
         </div>
       </motion.div>
 
-      {/* Back to Top Button with Neon Effect */}
+      {/* Back to Top Button - Hide on Mobile */}
       <motion.button
         className="hidden lg:flex absolute top-20 right-6 items-center gap-3 text-white/90 text-base font-medium z-20"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -290,7 +342,6 @@ const Footer = () => {
           className="p-1.5 flex items-center justify-center rounded-lg bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden relative"
           whileHover={{
             boxShadow: "0 0 25px rgba(255, 107, 0, 0.6)",
-            borderColor: "rgba(255, 107, 0, 0.8)",
           }}
         >
           <svg

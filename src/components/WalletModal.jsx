@@ -817,7 +817,7 @@ const WalletModal = ({ isOpen, onClose }) => {
             className="fixed inset-0 flex items-center justify-center z-[101] p-4"
           >
             <div className="bg-[#1A1D24] rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl border border-white/10">
-              <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gradient-to-r from-[#F07730]/10 to-[#EFD28E]/10">
+              <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r ">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-[#F07730] to-[#EFD28E] rounded-lg flex items-center justify-center">
                     <svg
@@ -863,7 +863,7 @@ const WalletModal = ({ isOpen, onClose }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-6 py-3 rounded-full font-medium transition-all ${
+                    className={`px-4 py-2 rounded-full font-medium transition-all ${
                       activeTab === tab
                         ? "bg-gradient-to-r from-[#F07730] to-[#EFD28E] text-black"
                         : "bg-white/5 text-gray-400 hover:text-white"
