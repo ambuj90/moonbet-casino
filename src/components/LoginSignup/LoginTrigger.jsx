@@ -38,56 +38,62 @@ export const LoginTrigger = ({
   }, []);
 
   // Handle login success
-const handleLoginSuccess = (userData) => {
-  // Extract essential fields
-  const { token, user } = userData || {};
-  if (token) localStorage.setItem("token", token);
+  const handleLoginSuccess = (userData) => {
+    // Extract essential fields
+    const { token, user } = userData || {};
+    if (token) localStorage.setItem("token", token);
 
-  if (user) {
-    const { username, email, kycStatus, id } = user;
+    if (user) {
+      const { username, email, kycStatus, id } = user;
 
-    // Save individual entries (easy access)
-    // localStorage.setItem("userId", _id);
-    // localStorage.setItem("username", username);
-    // localStorage.setItem("email", email);
-    // localStorage.setItem("kycStatus", kycStatus);
+      // Save individual entries (easy access)
+      // localStorage.setItem("userId", _id);
+      // localStorage.setItem("username", username);
+      // localStorage.setItem("email", email);
+      // localStorage.setItem("kycStatus", kycStatus);
 
-    // Save as a compact JSON for profile dropdowns/modals
-    localStorage.setItem("user", JSON.stringify({ id, username, email, kycStatus }));
-  }
+      // Save as a compact JSON for profile dropdowns/modals
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ id, username, email, kycStatus })
+      );
+    }
 
-  setIsLoggedIn(true);
-  handleCloseModal();
-  if (onLoginSuccess) onLoginSuccess(userData);
-};
+    setIsLoggedIn(true);
+    handleCloseModal();
+    if (onLoginSuccess) onLoginSuccess(userData);
+  };
 
-// Handle signup success
-const handleSignupSuccess = (userData) => {
-  const { token, user } = userData || {};
-  if (token) localStorage.setItem("token", token);
+  // Handle signup success
+  const handleSignupSuccess = (userData) => {
+    const { token, user } = userData || {};
+    if (token) localStorage.setItem("token", token);
 
-  if (user) {
-    const { username, email, kycStatus, id } = user;
-    // localStorage.setItem("userId", _id);
-    // localStorage.setItem("username", username);
-    // localStorage.setItem("email", email);
-    // localStorage.setItem("kycStatus", kycStatus);
-    localStorage.setItem("user", JSON.stringify({ id, username, email, kycStatus }));
-  }
+    if (user) {
+      const { username, email, kycStatus, id } = user;
+      // localStorage.setItem("userId", _id);
+      // localStorage.setItem("username", username);
+      // localStorage.setItem("email", email);
+      // localStorage.setItem("kycStatus", kycStatus);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ id, username, email, kycStatus })
+      );
+    }
 
-  setIsLoggedIn(true);
-  handleCloseModal();
-  if (onSignupSuccess) onSignupSuccess(userData);
-};
+    setIsLoggedIn(true);
+    handleCloseModal();
+    if (onSignupSuccess) onSignupSuccess(userData);
+  };
 
   const handleLogout = () => {
-   localStorage.removeItem("token");
-   window.dispatchEvent(new Event("tokenChanged"));
-  localStorage.removeItem("user");
-  localStorage.removeItem("userId");
-  localStorage.removeItem("username");
-  localStorage.removeItem("email");
-  localStorage.removeItem("kycStatus");
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("tokenChanged"));
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
+    localStorage.removeItem("kycStatus");
     setIsLoggedIn(false);
     setDropdownOpen(false);
     toast.info("You have been logged out successfully", {
@@ -129,7 +135,11 @@ const handleSignupSuccess = (userData) => {
           onClick={() => setDropdownOpen(!dropdownOpen)}
           className={`${className} flex items-center justify-center w-9 h-9 rounded-full bg-[#20263a] hover:bg-[#2a324a] transition-all text-white`}
         >
-          <img src="/vite.svg" alt="User" className="w-5 h-5 opacity-90" />
+          <img
+            src="/icons/user.svg"
+            alt="User"
+            className="w-5 h-5 opacity-90"
+          />
         </button>
 
         {/* Dropdown Menu */}
@@ -143,7 +153,11 @@ const handleSignupSuccess = (userData) => {
               onClick={handleProfileClick}
               className="flex items-center gap-3 px-4 py-2.5 text-gray-200 hover:bg-white/10 transition-all w-full text-left"
             >
-              <img src="/vite.svg" alt="" className="w-4 h-4" />
+              <img
+                src="/icons/user.svg"
+                alt=""
+                className="w-4 h-4 invert brightness-0"
+              />
               <span>Profile</span>
             </button>
 
@@ -151,7 +165,11 @@ const handleSignupSuccess = (userData) => {
               to="/bets"
               className="flex items-center gap-3 px-4 py-2.5 text-gray-200 hover:bg-white/10 transition-all"
             >
-              <img src="/vite.svg" alt="" className="w-4 h-4" />
+              <img
+                src="/icons/crypto.svg"
+                alt=""
+                className="w-4 h-4 invert brightness-0"
+              />
               <span>Bets</span>
             </Link>
 
@@ -159,14 +177,22 @@ const handleSignupSuccess = (userData) => {
               to="/transactions"
               className="flex items-center gap-3 px-4 py-2.5 text-gray-200 hover:bg-white/10 transition-all"
             >
-              <img src="/vite.svg" alt="" className="w-4 h-4" />
+              <img
+                src="/icons/transaction.svg"
+                alt=""
+                className="w-4 h-4 invert brightness-0"
+              />
               <span>Transactions</span>
             </Link>
             <Link
               to="/settings"
               className="flex items-center gap-3 px-4 py-2.5 text-gray-200 hover:bg-white/10 transition-all"
             >
-              <img src="/vite.svg" alt="" className="w-4 h-4" />
+              <img
+                src="/icons/setting.svg"
+                alt=""
+                className="w-4 h-4 invert brightness-0"
+              />
               <span>Settings</span>
             </Link>
 
@@ -176,7 +202,11 @@ const handleSignupSuccess = (userData) => {
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-red-500/10 transition-all"
             >
-              <img src="/vite.svg" alt="" className="w-4 h-4" />
+              <img
+                src="/icons/power-button.svg"
+                alt=""
+                className="w-4 h-4 invert brightness-0"
+              />
               <span>Logout</span>
             </button>
           </div>
